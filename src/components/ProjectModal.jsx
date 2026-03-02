@@ -1,7 +1,7 @@
 import { ArrowUpRight, CircleDot, Github, Newspaper, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-export function ProjectModal({ project, onClose }) {
+export function ProjectModal({ project, onClose, text }) {
   const [state, setState] = useState('open')
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function ProjectModal({ project, onClose }) {
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="space-y-6">
               <div className="rounded-[1.8rem] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(253,186,116,0.16),transparent_42%),radial-gradient(circle_at_bottom,_rgba(56,189,248,0.18),transparent_52%),rgba(15,23,42,0.75)] px-6 py-14 text-center">
-                <p className="text-xs uppercase tracking-[0.32em] text-slate-400">project visual</p>
+                <p className="text-xs uppercase tracking-[0.32em] text-slate-400">{text.projectVisual}</p>
                 <p className="mt-4 text-3xl font-semibold text-white">{project.accent}</p>
               </div>
 
@@ -68,13 +68,13 @@ export function ProjectModal({ project, onClose }) {
                     className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white"
                   >
                     <Github size={16} />
-                    GitHub
+                    {text.github}
                   </a>
                   <a
                     href={project.liveUrl}
                     className="button-secondary inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm"
                   >
-                    Live surface
+                    {text.liveSurface}
                     <ArrowUpRight size={16} />
                   </a>
                 </div>
@@ -84,7 +84,7 @@ export function ProjectModal({ project, onClose }) {
             <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/55 p-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.28em] text-slate-400">
                 <Newspaper size={14} />
-                README rendering view
+                {text.readmeView}
               </div>
 
               <p className="mt-6 text-sm leading-7 text-slate-300">{project.readme.intro}</p>
