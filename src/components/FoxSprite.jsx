@@ -10,13 +10,18 @@ function stripWhiteBackground(frame) {
     const average = (red + green + blue) / 3
     const spread = Math.max(red, green, blue) - Math.min(red, green, blue)
 
-    if (average > 238 && spread < 18) {
+    if (average > 232 && spread < 22) {
       data[index + 3] = 0
       continue
     }
 
-    if (average > 220 && spread < 24) {
-      data[index + 3] = Math.max(0, data[index + 3] - 210)
+    if (average > 210 && spread < 28) {
+      data[index + 3] = Math.max(0, data[index + 3] - 240)
+      continue
+    }
+
+    if (average > 188 && spread < 34) {
+      data[index + 3] = Math.max(0, data[index + 3] - 96)
     }
   }
 

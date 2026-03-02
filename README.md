@@ -171,6 +171,16 @@ Examples:
 
 ---
 
+## Rights and Usage
+
+Copyright belongs to Fatih Ozkurt as the individual author of this project.
+
+This repository is published as a portfolio showcase.
+Unless explicit written permission is given, no license is granted for copying,
+redistributing, or reusing the source code, design, or branded content.
+
+---
+
 ## Conclusion
 
 This project demonstrates how a personal portfolio frontend can be built with

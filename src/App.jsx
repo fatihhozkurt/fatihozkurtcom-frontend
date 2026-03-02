@@ -181,21 +181,89 @@ function PublicSite() {
       <main className="relative z-10">
         <Section id="home" className="overflow-hidden pt-24 md:pt-32">
           <div className="relative">
-            <div className="max-w-4xl space-y-8 md:space-y-10">
-              <div data-reveal className="reveal inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100" style={{ '--reveal-delay': '120ms' }}>
+            <div className="mx-auto flex min-h-[calc(100vh-10rem)] w-full max-w-6xl flex-col items-center justify-start pt-8 text-center md:pt-2">
+              <div
+                data-reveal
+                className="reveal inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100"
+                style={{ '--reveal-delay': '120ms' }}
+              >
                 <Sparkles size={14} />
-                Welcome to my corner of the internet
+                Current candidate
               </div>
-              <div data-reveal className="reveal space-y-0" style={{ '--reveal-delay': '220ms' }}>
-                <h1 className="max-w-4xl font-display text-6xl font-semibold leading-[0.92] tracking-tight text-white md:text-8xl md:leading-[0.9]">Fatih Ozkurt</h1>
-                <p className="-mt-2 text-[1.38rem] font-medium text-sky-200/72 md:-mt-3 md:text-[2.18rem]">Java Backend Developer</p>
-                <p className="max-w-2xl pt-4 text-base leading-8 text-slate-300 md:pt-5 md:text-lg">Secure APIs, disciplined service design, and modern product thinking with a strong focus on reliability, observability, and security.</p>
+              <div
+                data-reveal
+                className="reveal mt-8 rounded-[2.5rem] border border-white/8 bg-white/[0.025] px-6 py-10 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] md:px-12 md:py-14"
+                style={{ '--reveal-delay': '220ms' }}
+              >
+                <h1 className="mx-auto max-w-5xl font-display text-6xl font-semibold leading-[0.9] tracking-tight text-white md:text-[7.5rem] md:leading-[0.88]">
+                  Fatih Ozkurt
+                </h1>
+                <p className="mt-2 text-[1.25rem] font-medium uppercase tracking-[0.16em] text-sky-200/72 md:text-[1.7rem]">
+                  Java Backend Developer
+                </p>
+                <p className="mx-auto max-w-3xl pt-6 text-base leading-8 text-slate-300 md:text-lg">
+                  Secure APIs, disciplined service design, and modern product thinking with a strong focus on reliability,
+                  observability, and security.
+                </p>
               </div>
-              <div data-reveal className="reveal flex flex-wrap gap-3 pt-2" style={{ '--reveal-delay': '320ms' }}>
-                <button type="button" onClick={() => scrollToSection('projects')} className="button-primary inline-flex items-center rounded-full px-7 py-3 text-sm font-semibold">
+              <div
+                data-reveal
+                className="reveal mt-6 flex flex-wrap items-center justify-center gap-3"
+                style={{ '--reveal-delay': '320ms' }}
+              >
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('projects')}
+                  className="button-primary inline-flex items-center rounded-full px-7 py-3 text-sm font-semibold"
+                >
                   Explore
                   <ArrowUpRight size={16} className="ml-2" />
                 </button>
+              </div>
+
+              <div
+                data-reveal
+                className="reveal mt-20 w-full max-w-5xl"
+                style={{ '--reveal-delay': '380ms' }}
+              >
+                <div className="mb-8 flex items-center gap-4">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-sky-300/15 bg-sky-400/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-sky-100">
+                    <Sparkles size={14} />
+                    Original baseline
+                  </span>
+                  <div className="h-px flex-1 bg-[linear-gradient(90deg,rgba(125,211,252,0.18),transparent)]" />
+                </div>
+
+                <div className="text-left">
+                  <div className="max-w-4xl space-y-8 md:space-y-10">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100">
+                      <Sparkles size={14} />
+                      Welcome to my corner of the internet
+                    </div>
+                    <div className="space-y-0">
+                      <h1 className="max-w-4xl font-display text-6xl font-semibold leading-[0.92] tracking-tight text-white md:text-8xl md:leading-[0.9]">
+                        Fatih Ozkurt
+                      </h1>
+                      <p className="-mt-2 text-[1.38rem] font-medium text-sky-200/72 md:-mt-3 md:text-[2.18rem]">
+                        Java Backend Developer
+                      </p>
+                      <p className="max-w-2xl pt-4 text-base leading-8 text-slate-300 md:pt-5 md:text-lg">
+                        Secure APIs, disciplined service design, and modern product thinking with a strong focus on reliability,
+                        observability, and security.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => scrollToSection('about')}
+                        className="button-primary inline-flex items-center rounded-full px-7 py-3 text-sm font-semibold"
+                      >
+                        Explore
+                        <ArrowUpRight size={16} className="ml-2" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -391,7 +459,10 @@ function PublicSite() {
         </Section>
       </main>
 
-      <footer className="relative z-10 border-t border-white/10 px-4 py-8 text-center text-sm text-slate-500 md:px-8">Designed as a public surface for a backend engineer who still cares how systems feel.</footer>
+      <footer className="relative z-10 border-t border-white/10 px-4 py-8 text-center text-sm text-slate-500 md:px-8">
+        <p>Copyright © 2026 Fatih Ozkurt. All rights reserved.</p>
+        <p className="mt-2">Designed as a public surface for a backend engineer who still cares how systems feel.</p>
+      </footer>
       {projectModalOpen && selectedProject ? <ProjectModal project={selectedProject} onClose={() => setProjectModalOpen(false)} /> : null}
     </div>
   )
