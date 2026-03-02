@@ -1,0 +1,283 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-obsidian: #070910;
+  --font-sans: "Manrope", sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #070910;
+  color: #f8fafc;
+  font-family: var(--font-sans);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+a,
+input,
+textarea {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+button,
+a {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.site-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.intro-fade {
+  animation: intro-fade-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    rgba(8, 10, 18, 0.72);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.button-primary {
+  background:
+    linear-gradient(135deg, rgba(226, 232, 240, 0.96), rgba(125, 211, 252, 0.82));
+  color: #020617;
+  box-shadow:
+    0 16px 34px rgba(14, 165, 233, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.button-primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 20px 40px rgba(14, 165, 233, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.button-primary:active {
+  transform: translateY(0);
+}
+
+.button-secondary {
+  background: rgba(56, 189, 248, 0.14);
+  color: #e0f2fe;
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.14);
+}
+
+.button-secondary:hover {
+  background: rgba(56, 189, 248, 0.2);
+  box-shadow:
+    inset 0 0 0 1px rgba(125, 211, 252, 0.22),
+    0 10px 24px rgba(14, 165, 233, 0.12);
+}
+
+.fog-layer {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.05), transparent 24%),
+    radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.04), transparent 22%),
+    radial-gradient(circle at 50% 75%, rgba(255, 255, 255, 0.03), transparent 28%);
+  filter: blur(28px);
+}
+
+.dot-layer {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 0.8px, transparent 0.8px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.22));
+}
+
+.vignette-layer {
+  background:
+    radial-gradient(circle at center, transparent 35%, rgba(0, 0, 0, 0.5) 100%),
+    linear-gradient(180deg, rgba(7, 9, 16, 0.1), rgba(7, 9, 16, 0.7));
+}
+
+.marquee-track {
+  animation: marquee 34s linear infinite;
+}
+
+.resume-sheet {
+  box-shadow:
+    0 36px 90px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.surface-card {
+  animation: surface-rise 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.surface-card-delayed {
+  animation-delay: 90ms;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(26px) scale(0.985);
+  filter: blur(10px);
+  transition:
+    opacity 760ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 760ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 760ms ease;
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform, filter;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+.modal-shell[data-state='open'] {
+  animation: overlay-fade-in 220ms ease both;
+}
+
+.modal-shell[data-state='closing'] {
+  animation: overlay-fade-out 220ms ease both;
+}
+
+.modal-panel {
+  animation: modal-rise-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.modal-shell[data-state='closing'] .modal-panel {
+  animation: modal-rise-out 220ms ease both;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes intro-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes surface-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modal-rise-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .marquee-track {
+    animation: none;
+  }
+
+  .surface-card,
+  .surface-card-delayed,
+  .reveal,
+  .modal-shell,
+  .modal-panel {
+    animation: none !important;
+    transition: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
