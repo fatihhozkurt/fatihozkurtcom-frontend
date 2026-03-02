@@ -15,10 +15,13 @@ clean, intentional, and production-aware rather than decorative.
 - React 19
 - Vite 7
 - Tailwind CSS 4
+- pnpm
 - Lucide React
 - Vitest
 - Testing Library
 - ESLint
+- Docker
+- Nginx
 
 ---
 
@@ -84,13 +87,13 @@ public
 ### 1. Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 2. Start development server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Default local URL:
@@ -104,25 +107,25 @@ Default local URL:
 ### Run tests
 
 ```bash
-npm test
+pnpm test
 ```
 
 ### Run lint
 
 ```bash
-npm run lint
+pnpm lint
 ```
 
 ### Build production bundle
 
 ```bash
-npm run build
+pnpm build
 ```
 
 ### Preview production build
 
 ```bash
-npm run preview
+pnpm preview
 ```
 
 Preview URL is typically:
@@ -142,6 +145,37 @@ Preview URL is typically:
 - `/auth`
 
 This route is intentionally not exposed through the public navigation.
+
+---
+
+## Docker
+
+Build and run with Docker Compose:
+
+```bash
+docker compose up --build -d
+```
+
+Application URL:
+
+- http://localhost:4173
+
+Health check endpoint:
+
+- http://localhost:4173/health
+
+Stop containers:
+
+```bash
+docker compose down
+```
+
+The Docker setup uses:
+
+- `pnpm` for dependency installation and build
+- multi-stage Docker build
+- `nginx` for static file serving
+- SPA fallback routing so `/auth` works correctly in the browser
 
 ---
 

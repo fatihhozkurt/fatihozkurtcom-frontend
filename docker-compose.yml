@@ -1,0 +1,9 @@
+services:
+  portfolio-frontend:
+    container_name: fatihozkurtcom-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4173:80"
+    restart: unless-stopped
