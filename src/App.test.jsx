@@ -114,7 +114,7 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { name: /\/auth/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /enter workspace/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^home$/i })).not.toBeInTheDocument()
   })
 })

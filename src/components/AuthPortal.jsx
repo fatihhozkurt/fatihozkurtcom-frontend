@@ -1,11 +1,9 @@
 import {
-  Activity,
   AlertTriangle,
   ChartColumn,
   Globe,
   LockKeyhole,
   LogOut,
-  Mail,
   ShieldCheck,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -26,11 +24,17 @@ const recentLogs = [
 
 export function AuthPortal() {
   const [authenticated, setAuthenticated] = useState(false)
+  const [forgotMode, setForgotMode] = useState(false)
   const [form, setForm] = useState({ username: '', password: '' })
+  const [resetEmail, setResetEmail] = useState('')
 
   const canSubmit = useMemo(() => {
     return form.username.trim().length >= 4 && form.password.trim().length >= 8
   }, [form.password, form.username])
+
+  const canSendReset = useMemo(() => {
+    return resetEmail.trim().includes('@')
+  }, [resetEmail])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -129,7 +133,7 @@ export function AuthPortal() {
   return (
     <div className="site-shell min-h-screen bg-obsidian text-slate-100">
       <div className="mx-auto flex min-h-screen max-w-5xl items-center px-4 py-12 md:px-8">
-        <div className="grid w-full gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="grid w-full gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <section className="space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100">
               <LockKeyhole size={14} />
@@ -138,56 +142,90 @@ export function AuthPortal() {
             <div className="space-y-4">
               <h1 className="text-5xl font-semibold tracking-tight text-white md:text-6xl">/auth</h1>
               <p className="max-w-xl text-base leading-8 text-slate-300 md:text-lg">
-                Public arayuzden linklenmeyen, ayrı kalan ve güvenlik odaklı admin giriş yüzeyi.
+                Public arayuzden linklenmeyen, ayri kalan admin giris yuzeyi.
               </p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <article className="surface-card rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-5">
-                <ShieldCheck size={18} className="text-sky-200" />
-                <p className="mt-4 text-base font-semibold text-white">Rate-limit aware</p>
-                <p className="mt-2 text-sm leading-7 text-slate-300">Giriş denemeleri, şifre sıfırlama ve güvenlik olayları için ayrı koruma katmanları.</p>
-              </article>
-              <article className="surface-card rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-5">
-                <Mail size={18} className="text-orange-100" />
-                <p className="mt-4 text-base font-semibold text-white">Reset and delivery</p>
-                <p className="mt-2 text-sm leading-7 text-slate-300">Mail provider, delivery log ve localized exception akışı için hazır hook alanları.</p>
-              </article>
             </div>
           </section>
 
           <section className="glass-card rounded-[2rem] p-6 md:p-8">
-            <p className="text-xs uppercase tracking-[0.34em] text-slate-500">Admin login</p>
-            <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-              <label className="block space-y-2">
-                <span className="text-sm text-slate-300">Username</span>
-                <input
-                  name="username"
-                  type="text"
-                  value={form.username}
-                  onChange={handleChange}
-                  placeholder="fatih.admin"
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
-                />
-              </label>
-              <label className="block space-y-2">
-                <span className="text-sm text-slate-300">Password</span>
-                <input
-                  name="password"
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Minimum 8 characters"
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
-                />
-              </label>
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className="button-primary w-full rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-55"
-              >
-                Enter workspace
-              </button>
-            </form>
+            <p className="text-xs uppercase tracking-[0.34em] text-slate-500">{forgotMode ? 'Password reset' : 'Admin login'}</p>
+
+            {forgotMode ? (
+              <div className="mt-6 space-y-5">
+                <label className="block space-y-2">
+                  <span className="text-sm text-slate-300">Email</span>
+                  <input
+                    type="email"
+                    value={resetEmail}
+                    onChange={(event) => setResetEmail(event.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+                  />
+                </label>
+
+                <p className="text-sm leading-7 text-slate-400">
+                  Reset link gonderimi backend ile baglaninca aktif olacak. Bu ekran simdilik arayuz akisinin hazir halidir.
+                </p>
+
+                <button
+                  type="button"
+                  disabled={!canSendReset}
+                  className="button-primary w-full rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-55"
+                >
+                  Send reset link
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setForgotMode(false)}
+                  className="w-full rounded-full border border-white/10 bg-white/6 px-6 py-3 text-sm text-slate-200"
+                >
+                  Back to login
+                </button>
+              </div>
+            ) : (
+              <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+                <label className="block space-y-2">
+                  <span className="text-sm text-slate-300">Username</span>
+                  <input
+                    name="username"
+                    type="text"
+                    value={form.username}
+                    onChange={handleChange}
+                    placeholder="fatih.admin"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+                  />
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="text-sm text-slate-300">Password</span>
+                  <input
+                    name="password"
+                    type="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="Minimum 8 characters"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+                  />
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  className="button-primary w-full rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-55"
+                >
+                  Login
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setForgotMode(true)}
+                  className="w-full text-sm text-slate-400 underline decoration-white/10 underline-offset-4"
+                >
+                  Sifreni mi unuttun?
+                </button>
+              </form>
+            )}
           </section>
         </div>
       </div>
