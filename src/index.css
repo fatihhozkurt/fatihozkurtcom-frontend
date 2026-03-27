@@ -19,6 +19,11 @@ html {
   scroll-behavior: smooth;
 }
 
+::selection {
+  background: rgba(125, 211, 252, 0.26);
+  color: #f8fafc;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -53,6 +58,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
+:where(a, button, input, textarea):focus-visible {
+  outline: 2px solid rgba(125, 211, 252, 0.92);
+  outline-offset: 3px;
+}
+
 #root {
   min-height: 100vh;
 }
@@ -62,8 +72,17 @@ button:disabled {
   isolation: isolate;
 }
 
+.skip-link {
+  transform: translateY(-180%);
+  transition: transform 180ms ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 .intro-fade {
-  animation: intro-fade-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: intro-fade-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .glass-card {
@@ -130,8 +149,13 @@ button:disabled {
     linear-gradient(180deg, rgba(7, 9, 16, 0.1), rgba(7, 9, 16, 0.7));
 }
 
-.marquee-track {
-  animation: marquee 34s linear infinite;
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 .resume-sheet {
@@ -141,7 +165,7 @@ button:disabled {
 }
 
 .surface-card {
-  animation: surface-rise 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: surface-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .surface-card-delayed {
@@ -153,9 +177,9 @@ button:disabled {
   transform: translateY(26px) scale(0.985);
   filter: blur(10px);
   transition:
-    opacity 760ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 760ms cubic-bezier(0.22, 1, 0.36, 1),
-    filter 760ms ease;
+    opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 620ms ease;
   transition-delay: var(--reveal-delay, 0ms);
   will-change: opacity, transform, filter;
 }
@@ -175,21 +199,11 @@ button:disabled {
 }
 
 .modal-panel {
-  animation: modal-rise-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: modal-rise-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .modal-shell[data-state='closing'] .modal-panel {
   animation: modal-rise-out 220ms ease both;
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 @keyframes intro-fade-in {

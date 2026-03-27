@@ -1,0 +1,17 @@
+{
+  "name": "Fatih Ozkurt Portfolio",
+  "short_name": "Fatih Ozkurt",
+  "description": "Java backend developer portfolio with projects, writings, resume preview, and contact surface.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070910",
+  "theme_color": "#070910",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

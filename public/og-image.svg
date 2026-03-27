@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="sky" cx="25%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="amber" cx="80%" cy="18%" r="45%">
+      <stop offset="0%" stop-color="#fdba74" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#fdba74" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fdba74" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0.45" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#070910" />
+  <rect width="1200" height="630" fill="url(#sky)" />
+  <rect width="1200" height="630" fill="url(#amber)" />
+  <g opacity="0.16">
+    <path d="M0 110h1200" stroke="url(#stroke)" />
+    <path d="M0 520h1200" stroke="url(#stroke)" />
+  </g>
+  <g transform="translate(96 116)">
+    <rect x="0" y="0" width="84" height="84" rx="24" fill="none" stroke="#7dd3fc" stroke-opacity="0.45" />
+    <text x="42" y="53" text-anchor="middle" font-family="Space Grotesk, Arial, sans-serif" font-size="28" fill="#e2e8f0" letter-spacing="6">FO</text>
+    <text x="112" y="34" font-family="Manrope, Arial, sans-serif" font-size="18" fill="#ffffff">Fatih Ozkurt</text>
+    <text x="112" y="64" font-family="Manrope, Arial, sans-serif" font-size="18" fill="#94a3b8" letter-spacing="7">BACKEND PORTFOLIO</text>
+  </g>
+  <g transform="translate(96 210)">
+    <rect x="0" y="0" width="470" height="48" rx="24" fill="rgba(253,186,116,0.12)" stroke="rgba(253,186,116,0.24)" />
+    <text x="28" y="31" font-family="Manrope, Arial, sans-serif" font-size="17" fill="#ffedd5" letter-spacing="6">JAVA BACKEND DEVELOPER</text>
+  </g>
+  <g transform="translate(96 290)">
+    <text x="0" y="0" font-family="Space Grotesk, Arial, sans-serif" font-size="96" font-weight="700" fill="#f8fafc">Fatih Ozkurt</text>
+    <text x="0" y="72" font-family="Manrope, Arial, sans-serif" font-size="34" fill="#bae6fd">Secure APIs, observability, and disciplined service design.</text>
+    <text x="0" y="138" font-family="Manrope, Arial, sans-serif" font-size="26" fill="#cbd5e1">Projects, writings, resume preview, and a polished public product surface.</text>
+  </g>
+  <g transform="translate(842 188)">
+    <rect x="0" y="0" width="252" height="252" rx="42" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" />
+    <circle cx="126" cy="126" r="88" fill="none" stroke="url(#stroke)" stroke-opacity="0.24" />
+    <circle cx="126" cy="126" r="58" fill="none" stroke="#7dd3fc" stroke-opacity="0.18" />
+    <text x="126" y="118" text-anchor="middle" font-family="Space Grotesk, Arial, sans-serif" font-size="52" fill="#f8fafc">API</text>
+    <text x="126" y="156" text-anchor="middle" font-family="Manrope, Arial, sans-serif" font-size="19" fill="#94a3b8" letter-spacing="5">PRODUCT SYSTEMS</text>
+  </g>
+</svg>

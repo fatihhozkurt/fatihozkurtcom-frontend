@@ -1,21 +1,14 @@
 import {
-  Blocks,
-  Box,
-  Braces,
   ChartNoAxesCombined,
   Cloud,
   Database,
-  KeyRound,
-  Monitor,
-  Network,
-  Palette,
   ScanSearch,
   ServerCog,
   ShieldCheck,
   Sparkles,
-  Zap,
 } from 'lucide-react'
 import { createElement } from 'react'
+import { BrandIcon } from './BrandIcon'
 
 const stackIconMap = {
   backend: ServerCog,
@@ -26,21 +19,6 @@ const stackIconMap = {
   platform: Cloud,
   storage: Database,
   frontend: Sparkles,
-}
-
-const stackItemIconMap = {
-  braces: Braces,
-  server: ServerCog,
-  shield: ShieldCheck,
-  database: Database,
-  zap: Zap,
-  'scan-search': ScanSearch,
-  container: Blocks,
-  box: Box,
-  monitor: Monitor,
-  palette: Palette,
-  network: Network,
-  'key-round': KeyRound,
 }
 
 export function BackgroundEffects() {
@@ -95,12 +73,12 @@ export function InfoCard({ icon: Icon, title, description }) {
 }
 
 export function TechPill({ item }) {
-  const stackIcon = stackItemIconMap[item.icon] ?? stackIconMap[item.category] ?? Sparkles
+  const stackIcon = stackIconMap[item.category] ?? Sparkles
 
   return (
     <div className="surface-card inline-flex items-center gap-3 rounded-full border border-white/10 bg-slate-950/65 px-4 py-3 text-sm text-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.15)]">
-      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-sky-200">
-        {createElement(stackIcon, { size: 16 })}
+      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-sky-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <BrandIcon name={item.name} fallback={stackIcon} size={16} />
       </span>
       <span className="font-medium">{item.name}</span>
     </div>
