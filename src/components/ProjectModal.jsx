@@ -5,6 +5,13 @@ export function ProjectModal({ project, onClose, text }) {
   const [state, setState] = useState('open')
 
   useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
+
+  useEffect(() => {
     if (state !== 'closing') {
       return undefined
     }
@@ -21,18 +28,26 @@ export function ProjectModal({ project, onClose, text }) {
   }
 
   return (
-    <div className="modal-shell fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/72 p-4 backdrop-blur-md md:p-8" data-state={state}>
+    <div
+      className="modal-shell fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/72 p-4 backdrop-blur-md md:p-8"
+      data-state={state}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={`project-modal-title-${project.id}`}
+    >
       <div className="glass-card modal-panel relative max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[2rem]">
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 md:px-8">
           <div>
             <p className="text-xs uppercase tracking-[0.32em] text-slate-500">{project.category}</p>
-            <h3 className="mt-2 text-2xl font-semibold text-white md:text-3xl">{project.title}</h3>
+            <h3 id={`project-modal-title-${project.id}`} className="mt-2 text-2xl font-semibold text-white md:text-3xl">
+              {project.title}
+            </h3>
           </div>
           <button
             type="button"
             onClick={closeModal}
             className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-slate-100"
-            aria-label="Close project details"
+            aria-label={text.closeProjectDetails}
           >
             <X size={18} />
           </button>
@@ -41,9 +56,8 @@ export function ProjectModal({ project, onClose, text }) {
         <div className="max-h-[calc(92vh-5.5rem)] overflow-y-auto px-6 py-6 md:px-8 md:py-8">
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="space-y-6">
-              <div className="rounded-[1.8rem] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(253,186,116,0.16),transparent_42%),radial-gradient(circle_at_bottom,_rgba(56,189,248,0.18),transparent_52%),rgba(15,23,42,0.75)] px-6 py-14 text-center">
-                <p className="text-xs uppercase tracking-[0.32em] text-slate-400">{text.projectVisual}</p>
-                <p className="mt-4 text-3xl font-semibold text-white">{project.accent}</p>
+              <div className="overflow-hidden rounded-[1.8rem] border border-white/10 bg-slate-950/70">
+                <img src={project.coverImageUrl || '/project-surface.svg'} alt="" className="h-64 w-full object-cover" />
               </div>
 
               <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.04] p-5">
@@ -72,6 +86,8 @@ export function ProjectModal({ project, onClose, text }) {
                   </a>
                   <a
                     href={project.liveUrl}
+                    target="_blank"
+                    rel="noreferrer"
                     className="button-secondary inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm"
                   >
                     {text.liveSurface}

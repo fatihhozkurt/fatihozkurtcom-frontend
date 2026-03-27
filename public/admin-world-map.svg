@@ -1,0 +1,33 @@
+<svg width="1200" height="600" viewBox="0 0 1200 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="600" rx="36" fill="url(#bg)"/>
+  <g opacity="0.96">
+    <path d="M117 188L167 142L236 118L311 106L389 118L437 153L470 208L460 270L428 314L369 335L286 333L207 311L144 276L113 230L117 188Z" fill="url(#land)" stroke="url(#stroke)"/>
+    <path d="M309 358L335 337L366 348L394 386L410 432L401 485L374 517L336 525L303 502L281 457L275 407L288 374L309 358Z" fill="url(#land)" stroke="url(#stroke)"/>
+    <path d="M487 135L566 106L653 95L753 102L841 141L911 205L942 274L938 343L908 398L852 445L779 471L702 469L620 447L555 408L513 358L486 291L477 219L487 135Z" fill="url(#land)" stroke="url(#stroke)"/>
+    <path d="M719 466L745 455L773 462L791 480L785 509L761 526L731 521L712 499L719 466Z" fill="url(#land)" stroke="url(#stroke)"/>
+    <path d="M791 188L838 165L896 156L956 168L1009 200L1047 245L1049 288L1025 316L981 321L942 301L927 264L891 257L851 270L821 252L791 188Z" fill="url(#land)" stroke="url(#stroke)"/>
+    <path d="M837 289L882 265L940 262L1005 274L1074 304L1111 356L1106 408L1070 444L997 465L913 462L850 440L808 399L802 352L837 289Z" fill="url(#land)" stroke="url(#stroke)"/>
+    <path d="M962 452L992 444L1021 451L1038 470L1031 492L1004 503L971 499L954 479L962 452Z" fill="url(#land)" stroke="url(#stroke)"/>
+    <path d="M852 264L876 223L922 194L962 199L951 233L920 262L887 265L852 264Z" fill="url(#land2)"/>
+    <path d="M860 330L907 326L960 309L996 283L1007 320L1002 358L964 394L903 430L854 419L840 386L844 353L860 330Z" fill="url(#land2)"/>
+  </g>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#061120"/>
+      <stop offset="0.55" stop-color="#07162A"/>
+      <stop offset="1" stop-color="#050B16"/>
+    </linearGradient>
+    <linearGradient id="land" x1="180" y1="90" x2="1030" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17324A"/>
+      <stop offset="1" stop-color="#0D1E33"/>
+    </linearGradient>
+    <linearGradient id="land2" x1="820" y1="188" x2="1000" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B3B56"/>
+      <stop offset="1" stop-color="#10263D"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="120" y1="120" x2="1070" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#315D80"/>
+      <stop offset="1" stop-color="#1A3552"/>
+    </linearGradient>
+  </defs>
+</svg>
