@@ -40,6 +40,7 @@ import {
   getCsrf,
   login,
   logout,
+  refreshAccessToken,
   replaceAdminResume,
   updateAdminAbout,
   updateAdminArticle,
@@ -479,6 +480,29 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   const canSendReset = useMemo(() => resetEmail.trim().includes('@'), [resetEmail])
 
   useEffect(() => {
+    if (accessToken) {
+      return
+    }
+
+    let cancelled = false
+    const restoreSession = async () => {
+      try {
+        const response = await refreshAccessToken(locale)
+        if (!cancelled && response?.accessToken) {
+          setAccessToken(response.accessToken)
+        }
+      } catch {
+        // Refresh cookie may be missing or expired; keep login view.
+      }
+    }
+
+    restoreSession()
+    return () => {
+      cancelled = true
+    }
+  }, [accessToken, locale])
+
+  useEffect(() => {
     if (!authenticated) return
     const nodes = Array.from(document.querySelectorAll('[data-admin-section]'))
     const observer = new IntersectionObserver((entries) => {
@@ -618,6 +642,17 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
         setAuthInfo('')
       }
     } catch (error) {
+      if (error?.status === 401) {
+        try {
+          const refreshed = await refreshAccessToken(locale)
+          if (refreshed?.accessToken) {
+            setAccessToken(refreshed.accessToken)
+            return
+          }
+        } catch {
+          // Fall through and surface the original auth failure.
+        }
+      }
       setAuthError(error.message)
     } finally {
       setIsBusy(false)

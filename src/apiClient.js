@@ -29,7 +29,10 @@ async function request(path, options = {}) {
   if (!response.ok) {
     const fallbackMessage = `Request failed with status ${response.status}`
     const message = payload?.message ?? fallbackMessage
-    throw new Error(message)
+    const error = new Error(message)
+    error.status = response.status
+    error.code = payload?.code ?? null
+    throw error
   }
 
   return payload
@@ -114,6 +117,14 @@ export async function login(payload, locale) {
       ...localeHeaders(locale),
     },
     body: JSON.stringify(payload),
+  })
+}
+
+export async function refreshAccessToken(locale) {
+  return request('/api/v1/auth/refresh', {
+    method: 'POST',
+    credentials: 'include',
+    headers: localeHeaders(locale),
   })
 }
 
