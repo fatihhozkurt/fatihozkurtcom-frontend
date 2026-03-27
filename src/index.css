@@ -172,6 +172,22 @@ button:disabled {
   animation-delay: 90ms;
 }
 
+.character-ghost {
+  opacity: 0.94;
+  filter:
+    drop-shadow(0 16px 30px rgba(2, 6, 23, 0.55))
+    brightness(0.96)
+    saturate(0.92);
+}
+
+.character-ghost-faint {
+  opacity: 0.78;
+  filter:
+    drop-shadow(0 14px 28px rgba(2, 6, 23, 0.52))
+    brightness(0.93)
+    saturate(0.88);
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(26px) scale(0.985);

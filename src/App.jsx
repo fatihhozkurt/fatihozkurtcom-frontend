@@ -239,6 +239,19 @@ function EmptyCardsPlaceholder({ icon: PlaceholderIcon, message }) {
   )
 }
 
+function CharacterSticker({ src, className = '' }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      loading="lazy"
+      decoding="async"
+      className={`pointer-events-none select-none object-contain ${className}`}
+    />
+  )
+}
+
 function PublicSite({ locale, setLocale }) {
   const text = uiText[locale]
   const navigationItems = useMemo(() => getNavigationItems(locale), [locale])
@@ -836,9 +849,10 @@ function PublicSite({ locale, setLocale }) {
               </div>
               <div
                 data-reveal
-                className="reveal mt-8 rounded-[2.5rem] border border-white/8 bg-white/[0.025] px-6 py-10 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] md:px-12 md:py-14"
+                className="reveal relative mt-8 rounded-[2.5rem] border border-white/8 bg-white/[0.025] px-6 py-10 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] md:px-12 md:py-14"
                 style={{ '--reveal-delay': '220ms' }}
               >
+                <CharacterSticker src="/avatars/home-laptop.png" className="character-ghost absolute -right-6 -top-12 hidden w-40 md:block lg:w-44 xl:w-52" />
                 <h1 className="mx-auto max-w-5xl font-display text-6xl font-semibold leading-[0.9] tracking-tight text-white md:text-[7.5rem] md:leading-[0.88]">
                   {resolvedHeroContent?.fullName || text.hero.name}
                 </h1>
@@ -868,7 +882,8 @@ function PublicSite({ locale, setLocale }) {
         </Section>
 
         <Section id="about" className="pt-20 md:pt-28">
-          <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
+          <CharacterSticker src="/avatars/about-knight.png" className="character-ghost-faint absolute -right-10 top-14 hidden w-40 lg:block xl:w-48" />
+          <div className="relative z-10 grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={resolvedAboutContent?.eyebrow || text.sections.about.eyebrow}
@@ -928,7 +943,8 @@ function PublicSite({ locale, setLocale }) {
         </Section>
 
         <Section id="projects" className="pt-20 md:pt-28">
-          <div className="space-y-10">
+          <CharacterSticker src="/avatars/projects-chair-laptop.png" className="character-ghost-faint absolute -left-10 top-16 hidden w-44 lg:block xl:w-52" />
+          <div className="relative z-10 space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={text.sections.projects.eyebrow}
@@ -1004,7 +1020,8 @@ function PublicSite({ locale, setLocale }) {
         </Section>
 
         <Section id="writings" className="pt-20 md:pt-28">
-          <div className="space-y-10">
+          <CharacterSticker src="/avatars/writings-music.png" className="character-ghost-faint absolute -right-10 top-10 hidden w-44 lg:block xl:w-52" />
+          <div className="relative z-10 space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={text.sections.writings.eyebrow}
@@ -1061,7 +1078,8 @@ function PublicSite({ locale, setLocale }) {
                   {text.sections.resume.downloadCv}
                 </a>
               </div>
-              <div className="resume-sheet rounded-[1.75rem] border border-white/10 bg-[#f5f5f1] p-6 text-slate-950 md:p-10">
+              <div className="resume-sheet relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#f5f5f1] p-6 text-slate-950 md:p-10">
+                <CharacterSticker src="/avatars/resume-coffee.png" className="absolute -right-8 -top-8 hidden w-32 opacity-85 md:block lg:w-40" />
                 <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr]">
                   <div>
                     <p className="text-sm uppercase tracking-[0.35em] text-slate-500">{text.sections.resume.preview}</p>
@@ -1084,7 +1102,8 @@ function PublicSite({ locale, setLocale }) {
         </Section>
 
         <Section id="contact" className="min-h-0 pb-24 pt-20 md:pt-28" divider={false}>
-          <div className="grid items-start gap-10 xl:grid-cols-[0.78fr_1.02fr] xl:grid-rows-[auto_1fr] xl:gap-x-12 xl:gap-y-8">
+          <CharacterSticker src="/avatars/contact-wave.png" className="character-ghost-faint absolute -left-8 bottom-10 hidden w-40 lg:block xl:w-44" />
+          <div className="relative z-10 grid items-start gap-10 xl:grid-cols-[0.78fr_1.02fr] xl:grid-rows-[auto_1fr] xl:gap-x-12 xl:gap-y-8">
             <div data-reveal className="reveal xl:col-span-2 xl:row-start-1">
               <SectionHeading
                 className="max-w-5xl"

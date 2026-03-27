@@ -335,3 +335,23 @@ export async function deleteAdminArticle(accessToken, id, locale) {
 export async function replaceAdminResume(accessToken, payload, locale) {
   return adminMutation('/api/v1/admin/resume/replace', 'POST', accessToken, payload, locale)
 }
+
+export async function uploadAdminResume(accessToken, file, locale) {
+  const csrf = await getCsrf(locale)
+  const headers = {
+    ...adminAuthHeaders(accessToken, locale),
+  }
+  if (csrf?.headerName && csrf?.token) {
+    headers[csrf.headerName] = csrf.token
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  return request('/api/v1/admin/resume/upload', {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: formData,
+  })
+}

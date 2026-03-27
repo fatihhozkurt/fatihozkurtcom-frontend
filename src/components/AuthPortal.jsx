@@ -41,7 +41,7 @@ import {
   login,
   logout,
   refreshAccessToken,
-  replaceAdminResume,
+  uploadAdminResume,
   updateAdminAbout,
   updateAdminArticle,
   updateAdminContactProfile,
@@ -1036,14 +1036,19 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   }
 
   const handleReplaceResume = async () => {
-    const fileName = window.prompt(locale === 'tr' ? 'Dosya adı' : 'File name', adminResume?.fileName || 'fatih-ozkurt-cv.pdf')
-    if (!fileName) return
-    const objectKey = window.prompt(locale === 'tr' ? 'Object key' : 'Object key', `cv/${fileName}`) || `cv/${fileName}`
-    const contentType = window.prompt(locale === 'tr' ? 'Content-Type' : 'Content-Type', adminResume?.contentType || 'application/pdf') || 'application/pdf'
-    const sizeText = window.prompt(locale === 'tr' ? 'Boyut (byte)' : 'Size (bytes)', String(adminResume?.sizeBytes || 1)) || '1'
-    const sizeBytes = Number(sizeText)
-    if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) {
-      setAuthError(locale === 'tr' ? 'Geçerli bir dosya boyutu gir.' : 'Enter a valid file size.')
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.pdf,application/pdf'
+    input.style.display = 'none'
+    document.body.appendChild(input)
+
+    const selectedFile = await new Promise((resolve) => {
+      input.onchange = () => resolve(input.files?.[0] || null)
+      input.click()
+    })
+    document.body.removeChild(input)
+
+    if (!selectedFile) {
       return
     }
 
@@ -1051,14 +1056,9 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     setAuthError('')
     setAuthInfo('')
     try {
-      await replaceAdminResume(accessToken, {
-        fileName: fileName.trim(),
-        objectKey: objectKey.trim(),
-        contentType: contentType.trim(),
-        sizeBytes,
-      }, locale)
+      await uploadAdminResume(accessToken, selectedFile, locale)
       await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'CV metadata güncellendi.' : 'Resume metadata replaced.')
+      setAuthInfo(locale === 'tr' ? 'CV dosyası güncellendi.' : 'Resume file replaced.')
     } catch (error) {
       setAuthError(error.message)
     } finally {
