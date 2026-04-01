@@ -36,6 +36,38 @@ body {
   box-sizing: border-box;
 }
 
+.password-field::-ms-reveal,
+.password-field::-ms-clear {
+  display: none !important;
+}
+
+.password-field[type="password"]::-ms-reveal,
+.password-field[type="password"]::-ms-clear,
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}
+
+.password-field::-webkit-credentials-auto-fill-button,
+.password-field::-webkit-contacts-auto-fill-button,
+.password-field::-webkit-strong-password-auto-fill-button,
+.password-field::-webkit-caps-lock-indicator,
+.password-field::-webkit-textfield-decoration-container {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button,
+input[type="password"]::-webkit-caps-lock-indicator,
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 button,
 a,
 input,
@@ -172,6 +204,11 @@ button:disabled {
   animation-delay: 90ms;
 }
 
+.hero-badge-line {
+  display: inline-block;
+  animation: badge-line-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .character-ghost {
   opacity: 0.94;
   filter:
@@ -186,6 +223,54 @@ button:disabled {
     drop-shadow(0 14px 28px rgba(2, 6, 23, 0.52))
     brightness(0.93)
     saturate(0.88);
+}
+
+.character-sticker {
+  position: absolute;
+  z-index: 20;
+  width: clamp(var(--character-min-size, 7.4rem), var(--character-fluid-size, 23vw), var(--character-max-size, 19rem));
+  --anchor-y: 100%;
+  --character-nudge-x: 0rem;
+  --character-nudge-y: 0%;
+  --character-baseline-adjust: 0%;
+  --character-transform: translate(var(--character-nudge-x), calc(-1 * var(--anchor-y) + var(--character-nudge-y) + var(--character-baseline-adjust)));
+  transform: var(--character-transform);
+  transform-origin: top center;
+}
+
+.character-home {
+  --character-fluid-size: 24vw;
+  --anchor-y: 64%;
+  --character-nudge-y: -4%;
+  right: clamp(-5.2rem, -7.2vw, -3.2rem);
+  top: 0;
+}
+
+.character-about {
+  --character-min-size: 8.8rem;
+  --character-max-size: 18.2rem;
+  --character-fluid-size: 18vw;
+  --anchor-y: 100%;
+  --character-nudge-y: 0%;
+  --character-baseline-adjust: 8%;
+  left: clamp(1.8rem, 5vw, 6rem);
+  right: auto;
+  top: 0;
+}
+
+.character-resume {
+  --character-fluid-size: 24vw;
+  --anchor-y: 82%;
+  right: clamp(-2.6rem, -2vw, -1.3rem);
+  top: 0;
+}
+
+.character-contact {
+  --character-fluid-size: 24vw;
+  --anchor-y: 92%;
+  --character-nudge-y: 18%;
+  right: clamp(4rem, 6vw, 6rem);
+  top: 0;
 }
 
 .reveal {
@@ -238,6 +323,18 @@ button:disabled {
   from {
     opacity: 0;
     transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes badge-line-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
   }
 
   to {
@@ -301,6 +398,7 @@ button:disabled {
 
   .surface-card,
   .surface-card-delayed,
+  .hero-badge-line,
   .reveal,
   .modal-shell,
   .modal-panel {
@@ -309,5 +407,38 @@ button:disabled {
     filter: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .character-about {
+    --character-fluid-size: 24vw;
+    --character-max-size: 13.6rem;
+    left: clamp(0.5rem, 4vw, 2.5rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .projects-rail,
+  .writings-rail {
+    padding-inline: 0.35rem;
+  }
+
+  .projects-rail-item,
+  .writings-rail-item {
+    flex: 0 0 86vw;
+    max-width: 24rem;
+    scroll-snap-align: start;
+  }
+
+  .projects-rail-item article,
+  .writings-rail-item a {
+    min-height: 100%;
+  }
+
+  .character-about {
+    --character-fluid-size: 34vw;
+    --character-max-size: 10.5rem;
+    left: clamp(0.35rem, 3.8vw, 1.6rem);
   }
 }

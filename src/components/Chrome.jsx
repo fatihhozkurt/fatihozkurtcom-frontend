@@ -62,7 +62,7 @@ export function SectionHeading({ eyebrow, title, description, className = '' }) 
 
 export function InfoCard({ icon: Icon, title, description }) {
   return (
-    <article className="surface-card rounded-[1.8rem] border border-white/10 bg-white/[0.045] p-5">
+    <article className="surface-card flex h-full min-h-[18.6rem] flex-col rounded-[1.8rem] border border-white/10 bg-white/[0.045] p-5">
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-sky-400/10 text-sky-200">
         {createElement(Icon, { size: 20 })}
       </div>
@@ -78,7 +78,7 @@ export function TechPill({ item }) {
   return (
     <div className="surface-card inline-flex items-center gap-3 rounded-full border border-white/10 bg-slate-950/65 px-4 py-3 text-sm text-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.15)]">
       <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-sky-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-        <BrandIcon name={item.name} fallback={stackIcon} size={16} />
+        <BrandIcon name={item.name} iconKey={item.icon} fallback={stackIcon} size={16} />
       </span>
       <span className="font-medium">{item.name}</span>
     </div>

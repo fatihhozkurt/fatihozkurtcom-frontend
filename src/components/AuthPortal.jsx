@@ -1,6 +1,8 @@
 ﻿import {
   AlertTriangle,
   ChartColumn,
+  Eye,
+  EyeOff,
   FileDown,
   Github,
   Globe,
@@ -31,6 +33,7 @@ import {
   getAdminDashboardOverview,
   getAdminFailedLogins,
   getAdminHero,
+  getAdminPageSections,
   getAdminProjects,
   getAdminResetEvents,
   getAdminResume,
@@ -42,17 +45,25 @@ import {
   logout,
   refreshAccessToken,
   uploadAdminResume,
+  uploadAdminProjectAsset,
   updateAdminAbout,
   updateAdminArticle,
   updateAdminContactProfile,
+  updateAdminPageSection,
   updateAdminHero,
   updateAdminProject,
   updateAdminTechItem,
+  updateCredentials,
 } from '../apiClient'
 import worldMapUrl from 'world-atlas/countries-110m.json?url'
 import { BrandIcon } from './BrandIcon'
 
 const PASSWORD_PATTERN = /^(?=.*\p{Ll})(?=.*\p{Lu})(?=.*\d)(?=.*[^\p{L}\d]).{8,}$/u
+const MAX_RESUME_FILE_BYTES = 15 * 1024 * 1024
+const ALLOWED_IMAGE_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/avif', 'image/gif', 'image/svg+xml']
+const ALLOWED_IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.svg']
+const ALLOWED_RESUME_MIME_TYPES = ['application/pdf', 'application/x-pdf']
+const ALLOWED_RESUME_EXTENSIONS = ['.pdf']
 
 const copyByLocale = {
   en: {
@@ -65,7 +76,7 @@ const copyByLocale = {
     password: 'Password',
     login: 'Login',
     forgotPassword: 'Forgot your password?',
-    resetHint: 'Reset link delivery will become active once the backend is connected.',
+    resetHint: 'Reset link is always sent to the owner inbox configured in the system.',
     sendResetLink: 'Send reset link',
     backToLogin: 'Back to login',
     passwordRule: 'Minimum 8 characters, uppercase, lowercase, number, and symbol.',
@@ -95,7 +106,7 @@ const copyByLocale = {
     password: 'Şifre',
     login: 'Giriş yap',
     forgotPassword: 'Şifreni mi unuttun?',
-    resetHint: 'Reset link gönderimi backend bağlandığında aktif olacak.',
+    resetHint: 'Reset link her zaman sistemde tanımlı sahibi e-posta adresine gönderilir.',
     sendResetLink: 'Reset linki gönder',
     backToLogin: 'Girişe dön',
     passwordRule: 'Minimum 8 karakter, büyük harf, küçük harf, sayı ve sembol zorunlu.',
@@ -122,7 +133,7 @@ const sectionCopy = {
     overview: ['Overview', 'A one-page operations surface for the public portfolio.', 'Traffic, content, delivery, and security signals stay in one space.'],
     analytics: ['Analytics', 'Traffic, country spread, and failure signals.', 'Read weekly movement, geo spread, and security drift before touching content.'],
     content: ['Content', 'Edit hero copy and visible stack.', 'The public landing impression and technical shortlist should be adjustable without code edits.'],
-    projects: ['Projects', 'CRUD-ready project inventory.', 'Add, edit, archive, and reorder the cards shown on the public surface.'],
+    projects: ['Projects', 'CRUD-ready project inventory.', 'Add, edit, delete, and reorder the cards shown on the public surface.'],
     writings: ['Writings', 'Medium and article management.', 'Keep article links, excerpts, and ordering fresh without touching layout.'],
     resume: ['Resume', 'CV asset lifecycle and delivery state.', 'Replace the active file and keep asset metadata visible.'],
     contact: ['Contact', 'Public channels and outbound delivery routing.', 'Expose public links while keeping the form delivery target controlled.'],
@@ -132,7 +143,7 @@ const sectionCopy = {
     overview: ['Genel bakış', 'Public portfolyo için tek yüzeyli operasyon paneli.', 'Trafik, içerik, teslimat ve güvenlik sinyalleri aynı yerde kalır.'],
     analytics: ['Analitik', 'Trafik, ülke dağılımı ve hata sinyalleri.', 'İçeriğe dokunmadan önce haftalık hareketi ve güvenlik kaymasını oku.'],
     content: ['İçerik', 'Hero metni ve görünür tech stack tek yerde.', 'Landing etkisi ve teknik kısa liste kod değişmeden yönetilebilmeli.'],
-    projects: ['Projeler', 'CRUD hazır proje envanteri.', 'Public yüzeyde görünen kartları ekle, düzenle, arşivle ve sırala.'],
+    projects: ['Projeler', 'CRUD hazır proje envanteri.', 'Public yüzeyde görünen kartları ekle, düzenle, sil ve sırala.'],
     writings: ['Yazılar', 'Medium ve makale yönetimi.', 'Makale linkleri ve özetleri düzeni bozmadan güncel kalmalı.'],
     resume: ['Özgeçmiş', 'CV asset yaşam döngüsü ve teslim durumu.', 'Aktif dosyayı değiştir ve meta bilgiyi görünür tut.'],
     contact: ['İletişim', 'Public kanallar ve dış teslimat yönlendirmesi.', 'Form teslim hedefi ve şablon ayarları burada yönetilir.'],
@@ -180,6 +191,22 @@ function formatDateTime(value) {
   return date.toLocaleString()
 }
 
+function localizedText(value, locale) {
+  const raw = String(value || '')
+  const prefix = '__I18N__'
+  if (!raw.startsWith(prefix)) {
+    return raw
+  }
+  try {
+    const parsed = JSON.parse(raw.slice(prefix.length))
+    const tr = String(parsed?.tr || parsed?.en || '')
+    const en = String(parsed?.en || parsed?.tr || '')
+    return locale === 'tr' ? (tr || en) : (en || tr)
+  } catch {
+    return raw
+  }
+}
+
 function LanguageSwitch({ locale, setLocale, labels }) {
   return (
     <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-[3px]">
@@ -222,11 +249,57 @@ function Field({ label, value, large = false, readOnly = true, onChange }) {
   )
 }
 
+function isFileLike(value) {
+  return value && typeof value === 'object' && typeof value.name === 'string'
+}
+
+function fileListToArray(fileList) {
+  if (!fileList || typeof fileList.length !== 'number') {
+    return []
+  }
+  return Array.from(fileList)
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim())
+}
+
+function isValidGithubUrl(value) {
+  const candidate = String(value || '').trim()
+  if (!candidate) {
+    return true
+  }
+  try {
+    const withScheme = /^https?:\/\//i.test(candidate) ? candidate : `https://${candidate}`
+    const url = new URL(withScheme)
+    return /(^|\.)github\.com$/i.test(url.hostname)
+  } catch {
+    return false
+  }
+}
+
+function extractFileExtension(fileName) {
+  const candidate = String(fileName || '').trim().toLowerCase()
+  if (!candidate || !candidate.includes('.')) {
+    return ''
+  }
+  return candidate.slice(candidate.lastIndexOf('.'))
+}
+
+function hasAllowedFileType(file, allowedMimeTypes, allowedExtensions) {
+  const mimeType = String(file?.type || '').toLowerCase()
+  const extension = extractFileExtension(file?.name)
+  const mimeAllowed = !mimeType || mimeType === 'application/octet-stream' || allowedMimeTypes.includes(mimeType)
+  const extensionAllowed = allowedExtensions.includes(extension)
+  return mimeAllowed && extensionAllowed
+}
+
 function Inventory({
   rows,
   labels,
   addLabel,
   hasStack = false,
+  showDuplicate = true,
   emptyLabel,
   onAdd,
   onEdit,
@@ -252,13 +325,338 @@ function Inventory({
               <p className="text-sm text-slate-200">{row.index}</p>
               <div className="flex flex-wrap gap-2 md:justify-end">
                 <button type="button" onClick={() => onEdit?.(row)} className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-sm text-slate-200">{labels[0]}</button>
-                <button type="button" onClick={() => onDuplicate?.(row)} className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-sm text-slate-200">{labels[1]}</button>
+                {showDuplicate ? (
+                  <button type="button" onClick={() => onDuplicate?.(row)} className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-sm text-slate-200">{labels[1]}</button>
+                ) : null}
                 <button type="button" onClick={() => onArchive?.(row)} className="rounded-full border border-red-400/16 bg-red-400/8 px-3 py-1.5 text-sm text-red-100">{labels[2]}</button>
               </div>
             </div>
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+function AdminEditorModal({ modal, values, error, onChange, onClose, onSubmit, busy, locale }) {
+  const hasLocalizedFields = Boolean(modal?.fields?.some((field) => field.type === 'localizedText' || field.type === 'localizedTextarea'))
+  const editorLanguage = values.__editorLanguage || locale
+  const updateEditorLanguage = (nextLocale) => {
+    onChange('__editorLanguage', nextLocale)
+  }
+  const pendingPreviewUrls = useMemo(() => {
+    if (!Array.isArray(values.galleryFiles) || values.galleryFiles.length === 0) {
+      return []
+    }
+    return values.galleryFiles.map((file, index) => ({
+      id: `${file?.name || 'file'}-${index}`,
+      url: URL.createObjectURL(file),
+    }))
+  }, [values.galleryFiles])
+
+  useEffect(
+    () => () => {
+      pendingPreviewUrls.forEach((item) => URL.revokeObjectURL(item.url))
+    },
+    [pendingPreviewUrls],
+  )
+
+  if (!modal) {
+    return null
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-2 backdrop-blur-md sm:p-4"
+      onMouseDown={onClose}
+    >
+      <div
+        className="mt-2 flex max-h-[calc(100dvh-1rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/15 bg-[linear-gradient(180deg,rgba(10,16,34,0.98),rgba(7,12,27,0.98))] shadow-[0_30px_100px_rgba(2,6,23,0.75)] sm:mt-4 sm:max-h-[calc(100dvh-2rem)] sm:rounded-[1.6rem]"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="sticky top-0 z-10 border-b border-white/10 bg-[linear-gradient(180deg,rgba(11,18,34,0.98),rgba(11,18,34,0.88))] px-4 py-3 backdrop-blur-md sm:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">{locale === 'tr' ? 'Düzenleyici' : 'Editor'}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <h3 className="text-xl font-semibold text-white sm:text-2xl">{modal.title}</h3>
+                {hasLocalizedFields ? (
+                  <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1">
+                    {['tr', 'en'].map((lang) => (
+                      <button
+                        key={`editor-lang-${lang}`}
+                        type="button"
+                        onClick={() => updateEditorLanguage(lang)}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
+                          editorLanguage === lang
+                            ? 'bg-sky-400/15 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.22)]'
+                            : 'text-slate-300 hover:bg-white/6 hover:text-white'
+                        }`}
+                      >
+                        {lang}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white"
+              aria-label={locale === 'tr' ? 'Kapat' : 'Close'}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <form onSubmit={onSubmit} className="flex h-full min-h-0 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
+            {error ? <p className="mb-4 rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">{error}</p> : null}
+            <div className="grid gap-3 md:grid-cols-2">
+              {modal.fields.map((field) => (
+                <div key={field.name} className={`block space-y-1.5 ${field.type === 'textarea' || field.type === 'localizedTextarea' || field.type === 'galleryManager' ? 'md:col-span-2' : ''}`}>
+                  <span className="relative -top-1 pl-1 text-sm text-slate-300">{field.label}</span>
+                  {field.type === 'localizedText' || field.type === 'localizedTextarea' ? (
+                    <div className="space-y-2 rounded-2xl border border-white/10 bg-slate-950/45 p-2.5">
+                      {field.type === 'localizedTextarea' ? (
+                        <textarea
+                          rows={field.rows || 4}
+                          value={values[editorLanguage === 'tr' ? field.trKey : field.enKey] || ''}
+                          onChange={(event) => onChange(editorLanguage === 'tr' ? field.trKey : field.enKey, event.target.value)}
+                          placeholder={field.placeholder || ''}
+                          className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm leading-7 text-white outline-none placeholder:text-slate-500"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          value={values[editorLanguage === 'tr' ? field.trKey : field.enKey] || ''}
+                          onChange={(event) => onChange(editorLanguage === 'tr' ? field.trKey : field.enKey, event.target.value)}
+                          placeholder={field.placeholder || ''}
+                          className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+                        />
+                      )}
+                    </div>
+                  ) : field.type === 'textarea' ? (
+                    <textarea
+                      rows={field.rows || 4}
+                      value={values[field.name] || ''}
+                      onChange={(event) => onChange(field.name, event.target.value)}
+                      placeholder={field.placeholder || ''}
+                      className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm leading-7 text-white outline-none placeholder:text-slate-500"
+                    />
+                  ) : field.type === 'file' ? (
+                    <>
+                      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/45 px-3 py-2.5">
+                        <input
+                          id={`editor-file-${field.name}`}
+                          type="file"
+                          accept={field.accept || '*/*'}
+                          onChange={(event) => onChange(field.name, event.target.files?.[0] ?? null)}
+                          className="sr-only"
+                        />
+                        <label htmlFor={`editor-file-${field.name}`} className="inline-flex cursor-pointer rounded-full bg-sky-400/15 px-3 py-1.5 text-xs font-semibold text-sky-100">
+                          {locale === 'tr' ? 'Dosya seç' : 'Choose file'}
+                        </label>
+                        <span className="text-sm text-slate-300">
+                          {isFileLike(values[field.name])
+                            ? values[field.name].name
+                            : (locale === 'tr' ? 'Dosya seçilmedi' : 'No file selected')}
+                        </span>
+                      </div>
+                    </>
+                  ) : field.type === 'files' ? (
+                    <>
+                      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/45 px-3 py-2.5">
+                        <input
+                          id={`editor-files-${field.name}`}
+                          type="file"
+                          multiple
+                          accept={field.accept || '*/*'}
+                          onChange={(event) => {
+                            const incoming = fileListToArray(event.target.files)
+                            const existing = Array.isArray(values[field.name]) ? values[field.name] : []
+                            onChange(field.name, [...existing, ...incoming])
+                          }}
+                          className="sr-only"
+                        />
+                        <label htmlFor={`editor-files-${field.name}`} className="inline-flex cursor-pointer rounded-full bg-sky-400/15 px-3 py-1.5 text-xs font-semibold text-sky-100">
+                          {locale === 'tr' ? 'Dosyalar seç' : 'Choose files'}
+                        </label>
+                        <span className="text-sm text-slate-300">
+                          {Array.isArray(values[field.name]) && values[field.name].length > 0
+                            ? values[field.name].map((file) => file.name).join(', ')
+                            : (locale === 'tr' ? 'Dosya seçilmedi' : 'No file selected')}
+                        </span>
+                      </div>
+                    </>
+                  ) : field.type === 'galleryManager' ? (
+                    <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/45 p-3.5">
+                      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2">
+                        <input
+                          id="editor-gallery-files"
+                          type="file"
+                          multiple
+                          accept={field.accept || 'image/*'}
+                          onChange={(event) => {
+                            const incoming = fileListToArray(event.target.files)
+                            const existing = Array.isArray(values.galleryFiles) ? values.galleryFiles : []
+                            onChange('galleryFiles', [...existing, ...incoming])
+                          }}
+                          className="sr-only"
+                        />
+                        <label htmlFor="editor-gallery-files" className="inline-flex cursor-pointer rounded-full bg-sky-400/15 px-3 py-1.5 text-xs font-semibold text-sky-100">
+                          {locale === 'tr' ? 'Görseller seç' : 'Choose images'}
+                        </label>
+                        <span className="text-sm text-slate-300">
+                          {Array.isArray(values.galleryFiles) && values.galleryFiles.length > 0
+                            ? `${values.galleryFiles.length} ${locale === 'tr' ? 'dosya seçildi' : 'files selected'}`
+                            : (locale === 'tr' ? 'Dosya seçilmedi' : 'No file selected')}
+                        </span>
+                      </div>
+                      {Array.isArray(values.galleryFiles) && values.galleryFiles.length > 0 ? (
+                        <div className="rounded-xl border border-white/8 bg-white/[0.02] p-2.5">
+                          <p className="text-xs text-slate-400">{locale === 'tr' ? 'Yüklemeyi bekleyen dosyalar' : 'Pending uploads'}</p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {values.galleryFiles.map((file, index) => (
+                              <button
+                                key={`${file.name}-${index}`}
+                                type="button"
+                                onClick={() => onChange('galleryFiles', values.galleryFiles.filter((_, i) => i !== index))}
+                                className="rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-xs text-slate-300"
+                              >
+                                {file.name} ×
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      {Array.isArray(values.galleryFiles) && values.galleryFiles.length > 0 ? (
+                        <div className="rounded-xl border border-white/8 bg-white/[0.02] p-2.5">
+                          <p className="text-xs text-slate-400">{locale === 'tr' ? 'Yeni görsel önizlemeleri' : 'New image previews'}</p>
+                          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                            {pendingPreviewUrls.map((item) => {
+                              return (
+                                <div key={item.id} className="relative rounded-xl border border-white/10 bg-slate-950/55 p-2">
+                                  <div className="aspect-[16/10] overflow-hidden rounded-lg border border-white/10 bg-slate-950/60">
+                                    <img src={item.url} alt="" className="h-full w-full object-cover" />
+                                  </div>
+                                  <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-slate-950/75 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-200">
+                                    {locale === 'tr' ? 'Yeni' : 'New'}
+                                  </span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
+                      {Array.isArray(values.galleryUrls) && values.galleryUrls.length > 0 ? (
+                        <div className="rounded-xl border border-white/8 bg-white/[0.02] p-2.5">
+                          <p className="text-xs text-slate-400">
+                            {locale === 'tr'
+                              ? 'Mevcut görseller (kapak seçmek için görsele tıkla)'
+                              : 'Current images (click an image to set cover)'}
+                          </p>
+                          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                            {values.galleryUrls.map((url) => (
+                              <div
+                                key={url}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => onChange('coverImageUrl', url)}
+                                onKeyDown={(event) => {
+                                  if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault()
+                                    onChange('coverImageUrl', url)
+                                  }
+                                }}
+                                className={`group relative cursor-pointer rounded-xl border bg-slate-950/55 p-2 transition ${
+                                  values.coverImageUrl === url
+                                    ? 'border-sky-300/70 shadow-[0_0_0_1px_rgba(125,211,252,0.3)]'
+                                    : 'border-white/10 hover:border-sky-300/35'
+                                }`}
+                              >
+                                <div className="aspect-[16/10] overflow-hidden rounded-lg border border-white/10 bg-slate-950/60">
+                                  <img src={url} alt="" className="h-full w-full object-cover" />
+                                </div>
+                                <span
+                                  className={`pointer-events-none absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                                    values.coverImageUrl === url
+                                      ? 'bg-sky-400/25 text-sky-100'
+                                      : 'bg-slate-950/75 text-slate-200 opacity-0 transition group-hover:opacity-100'
+                                  }`}
+                                >
+                                  {values.coverImageUrl === url
+                                    ? (locale === 'tr' ? 'Kapak görsel' : 'Cover image')
+                                    : (locale === 'tr' ? 'Kapak yap' : 'Set as cover')}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    const nextUrls = values.galleryUrls.filter((item) => item !== url)
+                                    const nextCover = values.coverImageUrl === url ? (nextUrls[0] || null) : values.coverImageUrl
+                                    onChange('galleryUrls', nextUrls)
+                                    onChange('coverImageUrl', nextCover)
+                                  }}
+                                  className="mt-2 rounded-full border border-red-400/20 bg-red-400/12 px-2 py-1 text-[10px] text-red-100"
+                                >
+                                  {locale === 'tr' ? 'Çıkar' : 'Remove'}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <input
+                      type={field.type || 'text'}
+                      value={values[field.name] || ''}
+                      onChange={(event) => onChange(field.name, event.target.value)}
+                      placeholder={field.placeholder || ''}
+                      className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-white/10 bg-[linear-gradient(180deg,rgba(11,18,34,0.9),rgba(11,18,34,0.98))] px-4 py-3 sm:px-6">
+            <button type="button" onClick={onClose} className="rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-slate-200">
+              {locale === 'tr' ? 'İptal' : 'Cancel'}
+            </button>
+            <button type="submit" disabled={busy} className="button-primary rounded-full px-5 py-2 text-sm font-semibold disabled:opacity-55">
+              {busy ? '...' : modal.submitLabel}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+function AdminConfirmModal({ modal, onClose, onConfirm, busy, locale }) {
+  if (!modal) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/75 px-4 backdrop-blur-sm" onMouseDown={onClose}>
+      <div
+        className="w-full max-w-lg rounded-[1.4rem] border border-white/15 bg-[#0b1222] p-5 shadow-[0_28px_90px_rgba(2,6,23,0.75)]"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <h3 className="text-xl font-semibold text-white">{modal.title}</h3>
+        <p className="mt-3 text-sm leading-7 text-slate-300">{modal.description}</p>
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <button type="button" onClick={onClose} className="rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-slate-200">
+            {locale === 'tr' ? 'İptal' : 'Cancel'}
+          </button>
+          <button type="button" onClick={onConfirm} disabled={busy} className="rounded-full border border-red-400/20 bg-red-400/15 px-4 py-2 text-sm text-red-100 disabled:opacity-55">
+            {busy ? '...' : modal.confirmLabel}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -363,7 +761,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   const [accessToken, setAccessToken] = useState('')
   const [forgotMode, setForgotMode] = useState(false)
   const [form, setForm] = useState({ username: '', password: '' })
-  const [resetEmail, setResetEmail] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [activeSection, setActiveSection] = useState(copy.nav[0][0])
   const [authError, setAuthError] = useState('')
   const [authInfo, setAuthInfo] = useState('')
@@ -379,11 +777,14 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   const [adminContactProfile, setAdminContactProfile] = useState(null)
   const [adminContactMessages, setAdminContactMessages] = useState([])
   const [heroDraft, setHeroDraft] = useState({
-    welcomeText: '',
     fullName: '',
     title: '',
     description: '',
     ctaLabel: '',
+  })
+  const [heroBadgeDraft, setHeroBadgeDraft] = useState({
+    tr: [''],
+    en: [''],
   })
   const [aboutDraft, setAboutDraft] = useState({
     eyebrow: '',
@@ -397,12 +798,30 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     mediumUrl: '',
     recipientEmail: '',
   })
+  const [pageSectionDraft, setPageSectionDraft] = useState({
+    projects: { eyebrow: '', title: '', description: '' },
+    writings: { eyebrow: '', title: '', description: '' },
+    resume: { eyebrow: '', title: '', description: '' },
+    contact: { eyebrow: '', title: '', description: '' },
+  })
+  const [credentialsDraft, setCredentialsDraft] = useState({
+    currentPassword: '',
+    newUsername: '',
+    newPassword: '',
+  })
+  const [showCurrentCredentialPassword, setShowCurrentCredentialPassword] = useState(false)
+  const [showNewCredentialPassword, setShowNewCredentialPassword] = useState(false)
   const [rateLimitTriggerCount, setRateLimitTriggerCount] = useState(0)
   const [securityData, setSecurityData] = useState({
     failed: [],
     reset: [],
     audit: [],
   })
+  const [editorModal, setEditorModal] = useState(null)
+  const [editorValues, setEditorValues] = useState({})
+  const [editorError, setEditorError] = useState('')
+  const [confirmModal, setConfirmModal] = useState(null)
+  const [toast, setToast] = useState(null)
 
   const authenticated = Boolean(accessToken)
   const metrics = useMemo(() => {
@@ -444,7 +863,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   const projectRows = useMemo(() => {
     return adminProjects.map((project, index) => ({
       id: project.id,
-      title: project.title,
+      title: localizedText(project.title, locale),
       status: locale === 'tr' ? 'Yayında' : 'Published',
       index: `0${index + 1}`,
       stackText: (project.stack || []).join(', '),
@@ -455,7 +874,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   const writingRows = useMemo(() => {
     return adminArticles.map((article, index) => ({
       id: article.id,
-      title: article.title,
+      title: localizedText(article.title, locale),
       status: locale === 'tr' ? 'Yayında' : 'Live',
       index: `0${index + 1}`,
       raw: article,
@@ -477,7 +896,18 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   }, [visitTrend])
 
   const canSubmit = useMemo(() => form.username.trim().length >= 4 && PASSWORD_PATTERN.test(form.password), [form.password, form.username])
-  const canSendReset = useMemo(() => resetEmail.trim().includes('@'), [resetEmail])
+  const canSendReset = true
+
+  useEffect(() => {
+    if (!authInfo) {
+      return undefined
+    }
+    setToast({ type: 'success', message: authInfo })
+    const timeoutId = window.setTimeout(() => {
+      setToast(null)
+    }, 2600)
+    return () => window.clearTimeout(timeoutId)
+  }, [authInfo])
 
   useEffect(() => {
     if (accessToken) {
@@ -574,6 +1004,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
         articlesResponse,
         resume,
         contactProfile,
+        pageSections,
         contactMessages,
         securityEvents,
         failedLogins,
@@ -590,6 +1021,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
         getAdminArticles(accessToken, locale),
         getAdminResume(accessToken, locale),
         getAdminContactProfile(accessToken, locale),
+        getAdminPageSections(accessToken, locale),
         getAdminContactMessages(accessToken, locale),
         getAdminSecurityEvents(accessToken, locale),
         getAdminFailedLogins(accessToken, locale),
@@ -608,12 +1040,12 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
       setAdminContactProfile(contactProfile)
       setAdminContactMessages(contactMessages || [])
       setHeroDraft({
-        welcomeText: hero?.welcomeText || '',
         fullName: hero?.fullName || '',
         title: hero?.title || '',
         description: hero?.description || '',
         ctaLabel: hero?.ctaLabel || '',
       })
+      setHeroBadgeDraft(decodeLocalizedLines(hero?.welcomeText || ''))
       setAboutDraft({
         eyebrow: about?.eyebrow || '',
         title: about?.title || '',
@@ -626,6 +1058,24 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
         mediumUrl: contactProfile?.mediumUrl || '',
         recipientEmail: contactProfile?.email || '',
       })
+      const defaultSectionDraft = {
+        projects: { eyebrow: '', title: '', description: '' },
+        writings: { eyebrow: '', title: '', description: '' },
+        resume: { eyebrow: '', title: '', description: '' },
+        contact: { eyebrow: '', title: '', description: '' },
+      }
+      ;(Array.isArray(pageSections) ? pageSections : []).forEach((item) => {
+        const key = String(item?.pageKey || '').toLowerCase()
+        if (!defaultSectionDraft[key]) {
+          return
+        }
+        defaultSectionDraft[key] = {
+          eyebrow: item?.eyebrow || '',
+          title: item?.title || '',
+          description: item?.description || '',
+        }
+      })
+      setPageSectionDraft(defaultSectionDraft)
       setRateLimitTriggerCount((securityEvents || []).filter((item) => item.eventType === 'RATE_LIMIT_TRIGGERED').length)
       const failedRows = (failedLogins || []).slice(0, 6).map((item) => [formatDateTime(item.occurredAt), item.username || '-', item.ipAddress || '-'])
       const resetRows = (resetEvents || []).slice(0, 6).map((item) => [formatDateTime(item.occurredAt), item.username || '-', item.details || '-'])
@@ -685,16 +1135,17 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
 
   const handleForgotPassword = async (event) => {
     event.preventDefault()
-    if (!canSendReset) {
-      return
-    }
 
     setIsBusy(true)
     setAuthError('')
     setAuthInfo('')
     try {
-      await forgotPassword({ email: resetEmail.trim() }, locale)
-      setAuthInfo(locale === 'tr' ? 'Reset link isteği alındı.' : 'Reset link request accepted.')
+      await forgotPassword(locale)
+      setAuthInfo(
+        locale === 'tr'
+          ? 'Reset link isteği alındı ve sahip e-posta kutusuna gönderildi.'
+          : 'Reset link request accepted and sent to the owner inbox.',
+      )
     } catch (error) {
       setAuthError(error.message)
     } finally {
@@ -714,9 +1165,161 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     setContactDraft((current) => ({ ...current, [field]: event.target.value }))
   }
 
+  const handleHeroBadgeLineChange = (lang, index, value) => {
+    setHeroBadgeDraft((current) => {
+      const currentLines = Array.isArray(current[lang]) ? [...current[lang]] : ['']
+      currentLines[index] = value
+      return { ...current, [lang]: currentLines }
+    })
+  }
+
+  const addHeroBadgeLine = (lang) => {
+    setHeroBadgeDraft((current) => {
+      const currentLines = Array.isArray(current[lang]) ? [...current[lang]] : []
+      return { ...current, [lang]: [...currentLines, ''] }
+    })
+  }
+
+  const removeHeroBadgeLine = (lang, index) => {
+    setHeroBadgeDraft((current) => {
+      const currentLines = Array.isArray(current[lang]) ? [...current[lang]] : []
+      const next = currentLines.filter((_, lineIndex) => lineIndex !== index)
+      return { ...current, [lang]: next.length > 0 ? next : [''] }
+    })
+  }
+
+  const handlePageSectionDraftChange = (pageKey, field) => (event) => {
+    const value = event.target.value
+    setPageSectionDraft((current) => ({
+      ...current,
+      [pageKey]: {
+        ...(current[pageKey] || {}),
+        [field]: value,
+      },
+    }))
+  }
+
+  const handleCredentialsDraftChange = (field) => (event) => {
+    setCredentialsDraft((current) => ({ ...current, [field]: event.target.value }))
+  }
+
   const normalizeOptional = (value) => {
     const trimmed = (value || '').trim()
     return trimmed.length > 0 ? trimmed : null
+  }
+
+  const LOCALIZED_PREFIX = '__I18N__'
+
+  const decodeLocalizedText = (value) => {
+    const raw = String(value || '')
+    if (!raw.startsWith(LOCALIZED_PREFIX)) {
+      return { tr: raw, en: raw }
+    }
+    try {
+      const parsed = JSON.parse(raw.slice(LOCALIZED_PREFIX.length))
+      return {
+        tr: String(parsed?.tr || parsed?.en || ''),
+        en: String(parsed?.en || parsed?.tr || ''),
+      }
+    } catch {
+      return { tr: raw, en: raw }
+    }
+  }
+
+  const encodeLocalizedText = (trValue, enValue) => {
+    const tr = String(trValue || '').trim()
+    const en = String(enValue || '').trim()
+    if (!tr && !en) {
+      return ''
+    }
+    if (tr && en && tr === en) {
+      return tr
+    }
+    return `${LOCALIZED_PREFIX}${JSON.stringify({ tr: tr || en, en: en || tr })}`
+  }
+
+  const decodeLocalizedLines = (value) => {
+    const localized = decodeLocalizedText(value)
+    const parse = (input) => String(input || '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+    const trLines = parse(localized.tr)
+    const enLines = parse(localized.en)
+    return {
+      tr: trLines.length > 0 ? trLines : [''],
+      en: enLines.length > 0 ? enLines : [''],
+    }
+  }
+
+  const encodeLocalizedLines = (linesByLocale) => {
+    const normalize = (items) =>
+      (Array.isArray(items) ? items : [])
+        .map((line) => String(line || '').trim())
+        .filter(Boolean)
+    const trLines = normalize(linesByLocale?.tr)
+    const enLines = normalize(linesByLocale?.en)
+    return encodeLocalizedText(trLines.join('\n'), enLines.join('\n'))
+  }
+
+  const normalizeWebUrl = (value) => {
+    const trimmed = normalizeOptional(value)
+    if (!trimmed) {
+      return null
+    }
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed
+    }
+    return `https://${trimmed}`
+  }
+
+  const resolveReadmeMarkdown = async (file, fallbackValue = '') => {
+    if (!isFileLike(file)) {
+      return String(fallbackValue || '')
+    }
+    const maxBytes = 512 * 1024
+    if (file.size > maxBytes) {
+      throw new Error(
+        locale === 'tr'
+          ? 'README dosyası çok büyük. Maksimum 512 KB olmalı.'
+          : 'README file is too large. Maximum allowed is 512 KB.',
+      )
+    }
+    const text = await file.text()
+    return String(text || '')
+  }
+
+  const uploadAssetFromFile = async (file, folder, options = {}) => {
+    if (!isFileLike(file)) {
+      return null
+    }
+    const maxSizeBytes = Number(options.maxSizeBytes || 0) || 5 * 1024 * 1024
+    const allowedMimeTypes = options.allowedMimeTypes || ALLOWED_IMAGE_MIME_TYPES
+    const allowedExtensions = options.allowedExtensions || ALLOWED_IMAGE_EXTENSIONS
+    if (!hasAllowedFileType(file, allowedMimeTypes, allowedExtensions)) {
+      throw new Error(
+        locale === 'tr'
+          ? 'Geçersiz dosya tipi. PNG, JPG, WEBP, AVIF, GIF veya SVG yükleyebilirsin.'
+          : 'Invalid file type. Use PNG, JPG, WEBP, AVIF, GIF, or SVG.',
+      )
+    }
+    if (file.size > maxSizeBytes) {
+      const maxMb = Math.round((maxSizeBytes / (1024 * 1024)) * 10) / 10
+      throw new Error(
+        locale === 'tr'
+          ? `Dosya çok büyük. Maksimum ${maxMb} MB olmalı.`
+          : `File is too large. Maximum allowed is ${maxMb} MB.`,
+      )
+    }
+    const uploaded = await uploadAdminProjectAsset(accessToken, file, locale, folder)
+    return uploaded?.publicUrl || null
+  }
+
+  const uniqueUrls = (urls) => {
+    if (!Array.isArray(urls)) {
+      return []
+    }
+    return Array.from(new Set(urls.map((item) => String(item || '').trim()).filter(Boolean)))
   }
 
   const saveCoreSections = async (modeLabel) => {
@@ -728,8 +1331,17 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     setAuthError('')
     setAuthInfo('')
     try {
+      if (contactDraft.email && !isValidEmail(contactDraft.email)) {
+        throw new Error(locale === 'tr' ? 'Public e-posta geçerli değil.' : 'Public email is not valid.')
+      }
+      if (contactDraft.recipientEmail && !isValidEmail(contactDraft.recipientEmail)) {
+        throw new Error(locale === 'tr' ? 'Inbox hedefi geçerli değil.' : 'Inbox target email is not valid.')
+      }
+      if (!isValidGithubUrl(contactDraft.githubUrl)) {
+        throw new Error(locale === 'tr' ? 'GitHub URL github.com alan adına ait olmalı.' : 'GitHub URL must use a github.com host.')
+      }
       await updateAdminHero(accessToken, {
-        welcomeText: heroDraft.welcomeText,
+        welcomeText: encodeLocalizedLines(heroBadgeDraft),
         fullName: heroDraft.fullName,
         title: heroDraft.title,
         description: heroDraft.description,
@@ -747,6 +1359,14 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
         mediumUrl: normalizeOptional(contactDraft.mediumUrl),
         recipientEmail: contactDraft.recipientEmail || contactDraft.email,
       }, locale)
+      for (const pageKey of ['projects', 'writings', 'resume', 'contact']) {
+        const sectionDraft = pageSectionDraft[pageKey] || {}
+        await updateAdminPageSection(accessToken, pageKey, {
+          eyebrow: sectionDraft.eyebrow,
+          title: sectionDraft.title,
+          description: sectionDraft.description,
+        }, locale)
+      }
       await loadAdminData()
       setAuthInfo(locale === 'tr' ? `${modeLabel} başarılı.` : `${modeLabel} completed.`)
     } catch (error) {
@@ -756,25 +1376,40 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     }
   }
 
-  const handleAddTech = async () => {
-    const name = window.prompt(locale === 'tr' ? 'Tech adı' : 'Tech name')
-    if (!name) return
-    const iconName = window.prompt(locale === 'tr' ? 'Icon adı (opsiyonel)' : 'Icon name (optional)', name) || name
-    const category = window.prompt(locale === 'tr' ? 'Kategori (opsiyonel)' : 'Category (optional)', 'backend') || 'backend'
+  const handleUpdateCredentials = async () => {
+    if (!credentialsDraft.currentPassword.trim()) {
+      setAuthError(locale === 'tr' ? 'Mevcut şifre zorunlu.' : 'Current password is required.')
+      return
+    }
+    if (!credentialsDraft.newUsername.trim() && !credentialsDraft.newPassword.trim()) {
+      setAuthError(locale === 'tr' ? 'Yeni kullanıcı adı veya yeni şifre gir.' : 'Provide a new username or a new password.')
+      return
+    }
+    if (credentialsDraft.newPassword && !PASSWORD_PATTERN.test(credentialsDraft.newPassword)) {
+      setAuthError(locale === 'tr' ? 'Yeni şifre güvenlik politikasını karşılamıyor.' : 'New password does not satisfy the policy.')
+      return
+    }
 
     setIsBusy(true)
     setAuthError('')
     setAuthInfo('')
     try {
-      await createAdminTechItem(accessToken, {
-        name: name.trim(),
-        iconName: iconName.trim(),
-        category: category.trim(),
-        sortOrder: adminTech.length + 1,
-        active: true,
-      }, locale)
-      await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'Tech eklendi.' : 'Tech item created.')
+      const response = await updateCredentials({
+        currentPassword: credentialsDraft.currentPassword,
+        newUsername: normalizeOptional(credentialsDraft.newUsername),
+        newPassword: normalizeOptional(credentialsDraft.newPassword),
+      }, accessToken, locale)
+      setCredentialsDraft({
+        currentPassword: '',
+        newUsername: '',
+        newPassword: '',
+      })
+      setAuthInfo(
+        locale === 'tr'
+          ? `Hesap bilgileri güncellendi. Yeni kullanıcı adı: ${response?.username || '-'}`
+          : `Account credentials updated. New username: ${response?.username || '-'}`
+      )
+      await handleLogout()
     } catch (error) {
       setAuthError(error.message)
     } finally {
@@ -782,114 +1417,306 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     }
   }
 
-  const handleEditTech = async (item, index) => {
-    const name = window.prompt(locale === 'tr' ? 'Tech adı' : 'Tech name', item.name || '')
-    if (!name) return
-    const iconName = window.prompt(locale === 'tr' ? 'Icon adı (opsiyonel)' : 'Icon name (optional)', item.iconName || item.name || '') || name
-    const category = window.prompt(locale === 'tr' ? 'Kategori' : 'Category', item.category || 'backend') || 'backend'
+  const openEditor = ({ title, submitLabel, fields, initialValues, onSubmit }) => {
+    setEditorValues(initialValues || {})
+    setEditorError('')
+    setEditorModal({ title, submitLabel, fields, onSubmit })
+  }
 
+  const closeEditor = () => {
+    if (!isBusy) {
+      setEditorModal(null)
+      setEditorValues({})
+      setEditorError('')
+    }
+  }
+
+  const submitEditor = async (event) => {
+    event.preventDefault()
+    if (!editorModal?.onSubmit) {
+      return
+    }
     setIsBusy(true)
     setAuthError('')
     setAuthInfo('')
+    setEditorError('')
     try {
-      await updateAdminTechItem(accessToken, item.id, {
-        name: name.trim(),
-        iconName: iconName.trim(),
-        category: category.trim(),
-        sortOrder: index + 1,
-        active: true,
-      }, locale)
+      const successMessage = await editorModal.onSubmit(editorValues)
       await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'Tech güncellendi.' : 'Tech item updated.')
+      if (successMessage) {
+        setAuthInfo(successMessage)
+      }
+      setEditorModal(null)
+      setEditorValues({})
+      setEditorError('')
     } catch (error) {
       setAuthError(error.message)
+      setEditorError(error.message)
     } finally {
       setIsBusy(false)
     }
   }
 
-  const handleArchiveTech = async (item) => {
-    if (!window.confirm(locale === 'tr' ? 'Bu tech öğesi arşivlensin mi?' : 'Archive this tech item?')) {
+  const openConfirm = ({ title, description, confirmLabel, onConfirm }) => {
+    setConfirmModal({ title, description, confirmLabel, onConfirm })
+  }
+
+  const closeConfirm = () => {
+    if (!isBusy) {
+      setConfirmModal(null)
+    }
+  }
+
+  const submitConfirm = async () => {
+    if (!confirmModal?.onConfirm) {
       return
     }
     setIsBusy(true)
     setAuthError('')
     setAuthInfo('')
     try {
-      await deleteAdminTechItem(accessToken, item.id, locale)
+      const successMessage = await confirmModal.onConfirm()
       await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'Tech arşivlendi.' : 'Tech item archived.')
+      if (successMessage) {
+        setAuthInfo(successMessage)
+      }
+      setConfirmModal(null)
     } catch (error) {
       setAuthError(error.message)
     } finally {
       setIsBusy(false)
     }
+  }
+
+  const handleAddTech = async () => {
+    openEditor({
+      title: locale === 'tr' ? 'Yeni teknoloji ekle' : 'Add new technology',
+      submitLabel: locale === 'tr' ? 'Kaydet' : 'Save',
+      fields: [
+        { name: 'name', label: locale === 'tr' ? 'Tech adı' : 'Tech name' },
+        { name: 'iconFile', label: locale === 'tr' ? 'İkon dosyası (svg/png/jpg/webp)' : 'Icon file (svg/png/jpg/webp)', type: 'file', accept: '.svg,.png,.jpg,.jpeg,.webp,.gif,.avif,image/*' },
+        { name: 'category', label: locale === 'tr' ? 'Kategori' : 'Category' },
+      ],
+      initialValues: { name: '', iconFile: null, category: 'backend' },
+      onSubmit: async (values) => {
+        const name = (values.name || '').trim()
+        if (!name) {
+          throw new Error(locale === 'tr' ? 'Tech adı zorunlu.' : 'Tech name is required.')
+        }
+        const uploadedIconUrl = await uploadAssetFromFile(values.iconFile, 'tech-icons', { maxSizeBytes: 2 * 1024 * 1024 })
+        if (!uploadedIconUrl) {
+          throw new Error(locale === 'tr' ? 'İkon dosyası seçmelisin.' : 'You must select an icon file.')
+        }
+        await createAdminTechItem(accessToken, {
+          name,
+          iconName: uploadedIconUrl.trim(),
+          category: (values.category || 'backend').trim(),
+          sortOrder: adminTech.length + 1,
+          active: true,
+        }, locale)
+        return locale === 'tr' ? 'Tech eklendi.' : 'Tech item created.'
+      },
+    })
+  }
+
+  const handleEditTech = async (item, index) => {
+    openEditor({
+      title: locale === 'tr' ? 'Teknoloji düzenle' : 'Edit technology',
+      submitLabel: locale === 'tr' ? 'Güncelle' : 'Update',
+      fields: [
+        { name: 'name', label: locale === 'tr' ? 'Tech adı' : 'Tech name' },
+        { name: 'iconFile', label: locale === 'tr' ? 'İkon dosyası (svg/png/jpg/webp)' : 'Icon file (svg/png/jpg/webp)', type: 'file', accept: '.svg,.png,.jpg,.jpeg,.webp,.gif,.avif,image/*' },
+        { name: 'category', label: locale === 'tr' ? 'Kategori' : 'Category' },
+      ],
+      initialValues: {
+        name: item.name || '',
+        iconFile: null,
+        category: item.category || 'backend',
+      },
+      onSubmit: async (values) => {
+        const name = (values.name || '').trim()
+        if (!name) {
+          throw new Error(locale === 'tr' ? 'Tech adı zorunlu.' : 'Tech name is required.')
+        }
+        const uploadedIconUrl = await uploadAssetFromFile(values.iconFile, 'tech-icons', { maxSizeBytes: 2 * 1024 * 1024 })
+        await updateAdminTechItem(accessToken, item.id, {
+          name,
+          iconName: (uploadedIconUrl || item.iconName || name).trim(),
+          category: (values.category || 'backend').trim(),
+          sortOrder: index + 1,
+          active: true,
+        }, locale)
+        return locale === 'tr' ? 'Tech güncellendi.' : 'Tech item updated.'
+      },
+    })
+  }
+
+  const handleArchiveTech = async (item) => {
+    openConfirm({
+      title: locale === 'tr' ? 'Teknolojiyi sil' : 'Delete technology',
+      description: locale === 'tr' ? 'Bu teknoloji öğesi kalıcı olarak silinecek. Devam etmek istiyor musun?' : 'This tech item will be permanently deleted. Continue?',
+      confirmLabel: locale === 'tr' ? 'Sil' : 'Delete',
+      onConfirm: async () => {
+        await deleteAdminTechItem(accessToken, item.id, locale)
+        return locale === 'tr' ? 'Tech silindi.' : 'Tech item deleted.'
+      },
+    })
   }
 
   const handleAddProject = async () => {
-    const title = window.prompt(locale === 'tr' ? 'Proje başlığı' : 'Project title')
-    if (!title) return
-    const category = window.prompt(locale === 'tr' ? 'Kategori' : 'Category', 'backend') || 'backend'
-    const summary = window.prompt(locale === 'tr' ? 'Özet' : 'Summary', '') || ''
-    const repositoryUrl = window.prompt(locale === 'tr' ? 'GitHub URL (opsiyonel)' : 'GitHub URL (optional)', '') || ''
-    const stackCsv = window.prompt(locale === 'tr' ? 'Stack (csv)' : 'Stack (csv)', 'Java,Spring Boot') || ''
-
-    setIsBusy(true)
-    setAuthError('')
-    setAuthInfo('')
-    try {
-      await createAdminProject(accessToken, {
-        title: title.trim(),
-        category: category.trim(),
-        summary: summary.trim(),
-        repositoryUrl: normalizeOptional(repositoryUrl),
-        demoUrl: null,
-        readmeMarkdown: null,
+    openEditor({
+      title: locale === 'tr' ? 'Yeni proje ekle' : 'Add new project',
+      submitLabel: locale === 'tr' ? 'Kaydet' : 'Save',
+      fields: [
+        { name: 'titleLocalized', trKey: 'titleTr', enKey: 'titleEn', label: locale === 'tr' ? 'Proje başlığı' : 'Project title', type: 'localizedText' },
+        { name: 'category', label: locale === 'tr' ? 'Kategori' : 'Category' },
+        { name: 'summaryLocalized', trKey: 'summaryTr', enKey: 'summaryEn', label: locale === 'tr' ? 'Özet' : 'Summary', type: 'localizedTextarea', rows: 3 },
+        { name: 'repositoryUrl', label: locale === 'tr' ? 'GitHub URL' : 'GitHub URL' },
+        { name: 'demoUrl', label: locale === 'tr' ? 'Canlı adres URL' : 'Live address URL' },
+        { name: 'galleryManager', label: locale === 'tr' ? 'Görseller' : 'Images', type: 'galleryManager', accept: '.svg,.png,.jpg,.jpeg,.webp,.gif,.avif,image/*' },
+        { name: 'stackCsv', label: locale === 'tr' ? 'Stack (csv)' : 'Stack (csv)' },
+        { name: 'readmeFile', label: locale === 'tr' ? 'README dosyası (.md)' : 'README file (.md)', type: 'file', accept: '.md,.markdown,text/markdown,text/plain' },
+      ],
+      initialValues: {
+        titleTr: '',
+        titleEn: '',
+        category: 'backend',
+        summaryTr: '',
+        summaryEn: '',
+        repositoryUrl: '',
+        demoUrl: '',
         coverImageUrl: null,
-        stackCsv: stackCsv.trim(),
-        sortOrder: adminProjects.length + 1,
-        active: true,
-      }, locale)
-      await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'Proje eklendi.' : 'Project created.')
-    } catch (error) {
-      setAuthError(error.message)
-    } finally {
-      setIsBusy(false)
-    }
+        galleryUrls: [],
+        galleryFiles: [],
+        stackCsv: 'Java,Spring Boot',
+        readmeFile: null,
+      },
+      onSubmit: async (values) => {
+        const titleTr = (values.titleTr || '').trim()
+        const titleEn = (values.titleEn || '').trim()
+        if (!titleTr && !titleEn) {
+          throw new Error(locale === 'tr' ? 'Proje başlığı zorunlu.' : 'Project title is required.')
+        }
+        const summaryTr = (values.summaryTr || '').trim()
+        const summaryEn = (values.summaryEn || '').trim()
+        if (!isValidGithubUrl(values.repositoryUrl)) {
+          throw new Error(locale === 'tr' ? 'GitHub URL github.com alan adına ait olmalı.' : 'GitHub URL must use a github.com host.')
+        }
+        const readmeMarkdown = await resolveReadmeMarkdown(values.readmeFile, '')
+        if (!readmeMarkdown.trim()) {
+          throw new Error(locale === 'tr' ? 'README için .md dosyası seçmelisin.' : 'You must select a .md file for README.')
+        }
+        const galleryUrls = uniqueUrls(values.galleryUrls)
+        if (Array.isArray(values.galleryFiles) && values.galleryFiles.length > 0) {
+          for (const file of values.galleryFiles) {
+            const uploadedGalleryUrl = await uploadAssetFromFile(file, 'project-gallery', { maxSizeBytes: 8 * 1024 * 1024 })
+            if (uploadedGalleryUrl) {
+              galleryUrls.push(uploadedGalleryUrl)
+            }
+          }
+        }
+        const finalGalleryUrls = uniqueUrls(galleryUrls)
+        if (finalGalleryUrls.length === 0) {
+          throw new Error(locale === 'tr' ? 'En az bir proje görseli yüklemelisin.' : 'You must upload at least one project image.')
+        }
+        const coverImageUrl = finalGalleryUrls.includes(values.coverImageUrl)
+          ? values.coverImageUrl
+          : finalGalleryUrls[0]
+        await createAdminProject(accessToken, {
+          title: encodeLocalizedText(titleTr, titleEn),
+          category: (values.category || 'backend').trim(),
+          summary: encodeLocalizedText(summaryTr, summaryEn),
+          repositoryUrl: normalizeWebUrl(values.repositoryUrl),
+          demoUrl: normalizeWebUrl(values.demoUrl),
+          readmeMarkdown: normalizeOptional(readmeMarkdown),
+          coverImageUrl,
+          galleryImageUrlsCsv: finalGalleryUrls.join(','),
+          stackCsv: (values.stackCsv || '').trim(),
+          sortOrder: adminProjects.length + 1,
+          active: true,
+        }, locale)
+        return locale === 'tr' ? 'Proje eklendi.' : 'Project created.'
+      },
+    })
   }
 
   const handleEditProject = async (row) => {
-    const title = window.prompt(locale === 'tr' ? 'Proje başlığı' : 'Project title', row.title || '')
-    if (!title) return
-    const category = window.prompt(locale === 'tr' ? 'Kategori' : 'Category', row.raw.category || 'backend') || 'backend'
-    const summary = window.prompt(locale === 'tr' ? 'Özet' : 'Summary', row.raw.summary || '') || ''
-    const repositoryUrl = window.prompt(locale === 'tr' ? 'GitHub URL (opsiyonel)' : 'GitHub URL (optional)', row.raw.repositoryUrl || '') || ''
-    const stackCsv = window.prompt(locale === 'tr' ? 'Stack (csv)' : 'Stack (csv)', (row.raw.stack || []).join(',')) || ''
-
-    setIsBusy(true)
-    setAuthError('')
-    setAuthInfo('')
-    try {
-      await updateAdminProject(accessToken, row.id, {
-        title: title.trim(),
-        category: category.trim(),
-        summary: summary.trim(),
-        repositoryUrl: normalizeOptional(repositoryUrl),
-        demoUrl: null,
-        readmeMarkdown: null,
-        coverImageUrl: normalizeOptional(row.raw.coverImageUrl),
-        stackCsv: stackCsv.trim(),
-        sortOrder: Number(row.index) || 1,
-        active: true,
-      }, locale)
-      await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'Proje güncellendi.' : 'Project updated.')
-    } catch (error) {
-      setAuthError(error.message)
-    } finally {
-      setIsBusy(false)
-    }
+    const localizedTitle = decodeLocalizedText(row.raw.title || '')
+    const localizedSummary = decodeLocalizedText(row.raw.summary || '')
+    openEditor({
+      title: locale === 'tr' ? 'Projeyi düzenle' : 'Edit project',
+      submitLabel: locale === 'tr' ? 'Güncelle' : 'Update',
+      fields: [
+        { name: 'titleLocalized', trKey: 'titleTr', enKey: 'titleEn', label: locale === 'tr' ? 'Proje başlığı' : 'Project title', type: 'localizedText' },
+        { name: 'category', label: locale === 'tr' ? 'Kategori' : 'Category' },
+        { name: 'summaryLocalized', trKey: 'summaryTr', enKey: 'summaryEn', label: locale === 'tr' ? 'Özet' : 'Summary', type: 'localizedTextarea', rows: 3 },
+        { name: 'repositoryUrl', label: locale === 'tr' ? 'GitHub URL' : 'GitHub URL' },
+        { name: 'demoUrl', label: locale === 'tr' ? 'Canlı adres URL' : 'Live address URL' },
+        { name: 'galleryManager', label: locale === 'tr' ? 'Görseller' : 'Images', type: 'galleryManager', accept: '.svg,.png,.jpg,.jpeg,.webp,.gif,.avif,image/*' },
+        { name: 'stackCsv', label: locale === 'tr' ? 'Stack (csv)' : 'Stack (csv)' },
+        { name: 'readmeFile', label: locale === 'tr' ? 'README dosyası (.md)' : 'README file (.md)', type: 'file', accept: '.md,.markdown,text/markdown,text/plain' },
+      ],
+      initialValues: {
+        titleTr: localizedTitle.tr || '',
+        titleEn: localizedTitle.en || '',
+        category: row.raw.category || 'backend',
+        summaryTr: localizedSummary.tr || '',
+        summaryEn: localizedSummary.en || '',
+        repositoryUrl: row.raw.repositoryUrl || '',
+        demoUrl: row.raw.demoUrl || '',
+        coverImageUrl: row.raw.coverImageUrl || null,
+        galleryUrls: uniqueUrls(Array.isArray(row.raw.galleryImageUrls) && row.raw.galleryImageUrls.length > 0
+          ? row.raw.galleryImageUrls
+          : (row.raw.coverImageUrl ? [row.raw.coverImageUrl] : [])),
+        galleryFiles: [],
+        stackCsv: (row.raw.stack || []).join(','),
+        readmeFile: null,
+        readmeMarkdownExisting: row.raw.readmeMarkdown || '',
+      },
+      onSubmit: async (values) => {
+        const titleTr = (values.titleTr || '').trim()
+        const titleEn = (values.titleEn || '').trim()
+        if (!titleTr && !titleEn) {
+          throw new Error(locale === 'tr' ? 'Proje başlığı zorunlu.' : 'Project title is required.')
+        }
+        const summaryTr = (values.summaryTr || '').trim()
+        const summaryEn = (values.summaryEn || '').trim()
+        if (!isValidGithubUrl(values.repositoryUrl)) {
+          throw new Error(locale === 'tr' ? 'GitHub URL github.com alan adına ait olmalı.' : 'GitHub URL must use a github.com host.')
+        }
+        const readmeMarkdown = await resolveReadmeMarkdown(values.readmeFile, values.readmeMarkdownExisting || '')
+        const galleryUrls = uniqueUrls(values.galleryUrls)
+        if (Array.isArray(values.galleryFiles) && values.galleryFiles.length > 0) {
+          for (const file of values.galleryFiles) {
+            const uploadedGalleryUrl = await uploadAssetFromFile(file, 'project-gallery', { maxSizeBytes: 8 * 1024 * 1024 })
+            if (uploadedGalleryUrl) {
+              galleryUrls.push(uploadedGalleryUrl)
+            }
+          }
+        }
+        const finalGalleryUrls = uniqueUrls(galleryUrls)
+        if (finalGalleryUrls.length === 0) {
+          throw new Error(locale === 'tr' ? 'En az bir proje görseli yüklemelisin.' : 'You must upload at least one project image.')
+        }
+        const coverImageUrl = finalGalleryUrls.includes(values.coverImageUrl)
+          ? values.coverImageUrl
+          : finalGalleryUrls[0]
+        await updateAdminProject(accessToken, row.id, {
+          title: encodeLocalizedText(titleTr, titleEn),
+          category: (values.category || 'backend').trim(),
+          summary: encodeLocalizedText(summaryTr, summaryEn),
+          repositoryUrl: normalizeWebUrl(values.repositoryUrl),
+          demoUrl: normalizeWebUrl(values.demoUrl),
+          readmeMarkdown: normalizeOptional(readmeMarkdown),
+          coverImageUrl,
+          galleryImageUrlsCsv: finalGalleryUrls.join(','),
+          stackCsv: (values.stackCsv || '').trim(),
+          sortOrder: Number(row.index) || 1,
+          active: true,
+        }, locale)
+        return locale === 'tr' ? 'Proje güncellendi.' : 'Project updated.'
+      },
+    })
   }
 
   const handleDuplicateProject = async (row) => {
@@ -897,14 +1724,19 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     setAuthError('')
     setAuthInfo('')
     try {
+      const localizedTitle = decodeLocalizedText(row.raw.title || row.title || '')
       await createAdminProject(accessToken, {
-        title: `${row.title} Copy`,
+        title: encodeLocalizedText(
+          `${localizedTitle.tr || localizedTitle.en || row.title} Kopya`,
+          `${localizedTitle.en || localizedTitle.tr || row.title} Copy`,
+        ),
         category: row.raw.category || 'backend',
         summary: row.raw.summary || '',
         repositoryUrl: normalizeOptional(row.raw.repositoryUrl),
-        demoUrl: null,
-        readmeMarkdown: null,
+        demoUrl: normalizeOptional(row.raw.demoUrl),
+        readmeMarkdown: normalizeOptional(row.raw.readmeMarkdown),
         coverImageUrl: normalizeOptional(row.raw.coverImageUrl),
+        galleryImageUrlsCsv: Array.isArray(row.raw.galleryImageUrls) ? row.raw.galleryImageUrls.join(',') : null,
         stackCsv: (row.raw.stack || []).join(','),
         sortOrder: adminProjects.length + 1,
         active: true,
@@ -919,79 +1751,104 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   }
 
   const handleArchiveProject = async (row) => {
-    if (!window.confirm(locale === 'tr' ? 'Bu proje arşivlensin mi?' : 'Archive this project?')) {
-      return
-    }
-    setIsBusy(true)
-    setAuthError('')
-    setAuthInfo('')
-    try {
-      await deleteAdminProject(accessToken, row.id, locale)
-      await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'Proje arşivlendi.' : 'Project archived.')
-    } catch (error) {
-      setAuthError(error.message)
-    } finally {
-      setIsBusy(false)
-    }
+    openConfirm({
+      title: locale === 'tr' ? 'Projeyi sil' : 'Delete project',
+      description: locale === 'tr' ? 'Bu proje kalıcı olarak silinecek. Devam etmek istiyor musun?' : 'This project will be permanently deleted. Continue?',
+      confirmLabel: locale === 'tr' ? 'Sil' : 'Delete',
+      onConfirm: async () => {
+        await deleteAdminProject(accessToken, row.id, locale)
+        return locale === 'tr' ? 'Proje silindi.' : 'Project deleted.'
+      },
+    })
   }
 
   const handleAddArticle = async () => {
-    const title = window.prompt(locale === 'tr' ? 'Yazı başlığı' : 'Article title')
-    if (!title) return
-    const excerpt = window.prompt(locale === 'tr' ? 'Kısa açıklama' : 'Excerpt', '') || ''
-    const href = window.prompt(locale === 'tr' ? 'Medium URL' : 'Medium URL', '') || ''
-    const readingTime = window.prompt(locale === 'tr' ? 'Okuma süresi' : 'Reading time', '5 min read') || '5 min read'
-
-    setIsBusy(true)
-    setAuthError('')
-    setAuthInfo('')
-    try {
-      await createAdminArticle(accessToken, {
-        title: title.trim(),
-        excerpt: excerpt.trim(),
-        href: normalizeOptional(href),
-        readingTime: readingTime.trim(),
-        publishedAt: new Date().toISOString().slice(0, 10),
-        sortOrder: adminArticles.length + 1,
-        active: true,
-      }, locale)
-      await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'Yazı eklendi.' : 'Article created.')
-    } catch (error) {
-      setAuthError(error.message)
-    } finally {
-      setIsBusy(false)
-    }
+    openEditor({
+      title: locale === 'tr' ? 'Yeni yazı ekle' : 'Add new writing',
+      submitLabel: locale === 'tr' ? 'Kaydet' : 'Save',
+      fields: [
+        { name: 'titleLocalized', trKey: 'titleTr', enKey: 'titleEn', label: locale === 'tr' ? 'Yazı başlığı' : 'Article title', type: 'localizedText' },
+        { name: 'excerptLocalized', trKey: 'excerptTr', enKey: 'excerptEn', label: locale === 'tr' ? 'Kısa açıklama' : 'Excerpt', type: 'localizedTextarea', rows: 3 },
+        { name: 'href', label: 'Medium URL' },
+        { name: 'readingTimeLocalized', trKey: 'readingTimeTr', enKey: 'readingTimeEn', label: locale === 'tr' ? 'Okuma süresi' : 'Reading time', type: 'localizedText' },
+      ],
+      initialValues: {
+        titleTr: '',
+        titleEn: '',
+        excerptTr: '',
+        excerptEn: '',
+        href: '',
+        readingTimeTr: '5 dk okuma',
+        readingTimeEn: '5 min read',
+      },
+      onSubmit: async (values) => {
+        const titleTr = (values.titleTr || '').trim()
+        const titleEn = (values.titleEn || '').trim()
+        if (!titleTr && !titleEn) {
+          throw new Error(locale === 'tr' ? 'Yazı başlığı zorunlu.' : 'Article title is required.')
+        }
+        const excerptTr = (values.excerptTr || '').trim()
+        const excerptEn = (values.excerptEn || '').trim()
+        const readingTimeTr = (values.readingTimeTr || '').trim()
+        const readingTimeEn = (values.readingTimeEn || '').trim()
+        await createAdminArticle(accessToken, {
+          title: encodeLocalizedText(titleTr, titleEn),
+          excerpt: encodeLocalizedText(excerptTr, excerptEn),
+          href: normalizeOptional(values.href),
+          readingTime: encodeLocalizedText(readingTimeTr, readingTimeEn || '5 min read'),
+          publishedAt: new Date().toISOString().slice(0, 10),
+          sortOrder: adminArticles.length + 1,
+          active: true,
+        }, locale)
+        return locale === 'tr' ? 'Yazı eklendi.' : 'Article created.'
+      },
+    })
   }
 
   const handleEditArticle = async (row) => {
-    const title = window.prompt(locale === 'tr' ? 'Yazı başlığı' : 'Article title', row.title || '')
-    if (!title) return
-    const excerpt = window.prompt(locale === 'tr' ? 'Kısa açıklama' : 'Excerpt', row.raw.excerpt || '') || ''
-    const href = window.prompt(locale === 'tr' ? 'Medium URL' : 'Medium URL', row.raw.href || '') || ''
-    const readingTime = window.prompt(locale === 'tr' ? 'Okuma süresi' : 'Reading time', row.raw.readingTime || '5 min read') || '5 min read'
-
-    setIsBusy(true)
-    setAuthError('')
-    setAuthInfo('')
-    try {
-      await updateAdminArticle(accessToken, row.id, {
-        title: title.trim(),
-        excerpt: excerpt.trim(),
-        href: normalizeOptional(href),
-        readingTime: readingTime.trim(),
-        publishedAt: row.raw.publishedAt || new Date().toISOString().slice(0, 10),
-        sortOrder: Number(row.index) || 1,
-        active: true,
-      }, locale)
-      await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'Yazı güncellendi.' : 'Article updated.')
-    } catch (error) {
-      setAuthError(error.message)
-    } finally {
-      setIsBusy(false)
-    }
+    const localizedTitle = decodeLocalizedText(row.raw.title || '')
+    const localizedExcerpt = decodeLocalizedText(row.raw.excerpt || '')
+    const localizedReadingTime = decodeLocalizedText(row.raw.readingTime || '')
+    openEditor({
+      title: locale === 'tr' ? 'Yazıyı düzenle' : 'Edit writing',
+      submitLabel: locale === 'tr' ? 'Güncelle' : 'Update',
+      fields: [
+        { name: 'titleLocalized', trKey: 'titleTr', enKey: 'titleEn', label: locale === 'tr' ? 'Yazı başlığı' : 'Article title', type: 'localizedText' },
+        { name: 'excerptLocalized', trKey: 'excerptTr', enKey: 'excerptEn', label: locale === 'tr' ? 'Kısa açıklama' : 'Excerpt', type: 'localizedTextarea', rows: 3 },
+        { name: 'href', label: 'Medium URL' },
+        { name: 'readingTimeLocalized', trKey: 'readingTimeTr', enKey: 'readingTimeEn', label: locale === 'tr' ? 'Okuma süresi' : 'Reading time', type: 'localizedText' },
+      ],
+      initialValues: {
+        titleTr: localizedTitle.tr || '',
+        titleEn: localizedTitle.en || '',
+        excerptTr: localizedExcerpt.tr || '',
+        excerptEn: localizedExcerpt.en || '',
+        href: row.raw.href || '',
+        readingTimeTr: localizedReadingTime.tr || '5 dk okuma',
+        readingTimeEn: localizedReadingTime.en || '5 min read',
+      },
+      onSubmit: async (values) => {
+        const titleTr = (values.titleTr || '').trim()
+        const titleEn = (values.titleEn || '').trim()
+        if (!titleTr && !titleEn) {
+          throw new Error(locale === 'tr' ? 'Yazı başlığı zorunlu.' : 'Article title is required.')
+        }
+        const excerptTr = (values.excerptTr || '').trim()
+        const excerptEn = (values.excerptEn || '').trim()
+        const readingTimeTr = (values.readingTimeTr || '').trim()
+        const readingTimeEn = (values.readingTimeEn || '').trim()
+        await updateAdminArticle(accessToken, row.id, {
+          title: encodeLocalizedText(titleTr, titleEn),
+          excerpt: encodeLocalizedText(excerptTr, excerptEn),
+          href: normalizeOptional(values.href),
+          readingTime: encodeLocalizedText(readingTimeTr, readingTimeEn || '5 min read'),
+          publishedAt: row.raw.publishedAt || new Date().toISOString().slice(0, 10),
+          sortOrder: Number(row.index) || 1,
+          active: true,
+        }, locale)
+        return locale === 'tr' ? 'Yazı güncellendi.' : 'Article updated.'
+      },
+    })
   }
 
   const handleDuplicateArticle = async (row) => {
@@ -999,8 +1856,12 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     setAuthError('')
     setAuthInfo('')
     try {
+      const localizedTitle = decodeLocalizedText(row.raw.title || row.title || '')
       await createAdminArticle(accessToken, {
-        title: `${row.title} Copy`,
+        title: encodeLocalizedText(
+          `${localizedTitle.tr || localizedTitle.en || row.title} Kopya`,
+          `${localizedTitle.en || localizedTitle.tr || row.title} Copy`,
+        ),
         excerpt: row.raw.excerpt || '',
         href: normalizeOptional(row.raw.href),
         readingTime: row.raw.readingTime || '5 min read',
@@ -1018,21 +1879,15 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   }
 
   const handleArchiveArticle = async (row) => {
-    if (!window.confirm(locale === 'tr' ? 'Bu yazı arşivlensin mi?' : 'Archive this article?')) {
-      return
-    }
-    setIsBusy(true)
-    setAuthError('')
-    setAuthInfo('')
-    try {
-      await deleteAdminArticle(accessToken, row.id, locale)
-      await loadAdminData()
-      setAuthInfo(locale === 'tr' ? 'Yazı arşivlendi.' : 'Article archived.')
-    } catch (error) {
-      setAuthError(error.message)
-    } finally {
-      setIsBusy(false)
-    }
+    openConfirm({
+      title: locale === 'tr' ? 'Yazıyı sil' : 'Delete writing',
+      description: locale === 'tr' ? 'Bu yazı kalıcı olarak silinecek. Devam etmek istiyor musun?' : 'This writing will be permanently deleted. Continue?',
+      confirmLabel: locale === 'tr' ? 'Sil' : 'Delete',
+      onConfirm: async () => {
+        await deleteAdminArticle(accessToken, row.id, locale)
+        return locale === 'tr' ? 'Yazı silindi.' : 'Article deleted.'
+      },
+    })
   }
 
   const handleReplaceResume = async () => {
@@ -1049,6 +1904,15 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     document.body.removeChild(input)
 
     if (!selectedFile) {
+      return
+    }
+
+    if (!hasAllowedFileType(selectedFile, ALLOWED_RESUME_MIME_TYPES, ALLOWED_RESUME_EXTENSIONS)) {
+      setAuthError(locale === 'tr' ? 'CV dosyası PDF olmalı.' : 'Resume file must be a PDF.')
+      return
+    }
+    if (selectedFile.size <= 0 || selectedFile.size > MAX_RESUME_FILE_BYTES) {
+      setAuthError(locale === 'tr' ? 'CV dosyası en fazla 15 MB olabilir.' : 'Resume file must be 15 MB or smaller.')
       return
     }
 
@@ -1098,6 +1962,11 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
               ) : null}
               {authInfo ? (
                 <p className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">{authInfo}</p>
+              ) : null}
+              {toast ? (
+                <div className="fixed bottom-5 right-5 z-[130] max-w-sm rounded-2xl border border-emerald-400/30 bg-emerald-500/12 px-4 py-3 text-sm text-emerald-100 shadow-[0_24px_52px_rgba(2,6,23,0.45)]">
+                  {toast.message}
+                </div>
               ) : null}
               {isBusy ? <p className="text-sm text-slate-400">{locale === 'tr' ? 'Veriler yükleniyor...' : 'Loading admin data...'}</p> : null}
 
@@ -1169,11 +2038,87 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
                 <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
                   <div className="rounded-[1.7rem] border border-white/10 bg-slate-950/45 p-5">
                     <div className="grid gap-4">
-                      <Field label="Hero badge" value={heroDraft.welcomeText} readOnly={false} onChange={handleHeroDraftChange('welcomeText')} />
+                      <div className="rounded-[1.1rem] border border-white/10 bg-white/[0.02] p-3">
+                        <p className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                          {locale === 'tr' ? 'İçerik düzenleme dili' : 'Content editing language'}
+                        </p>
+                        <div className="mt-2 inline-flex rounded-full border border-white/10 bg-white/5 p-1">
+                          {['tr', 'en'].map((lang) => (
+                            <button
+                              key={`content-lang-${lang}`}
+                              type="button"
+                              onClick={() => setLocale(lang)}
+                              className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
+                                locale === lang
+                                  ? 'bg-sky-400/15 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.22)]'
+                                  : 'text-slate-300 hover:bg-white/6 hover:text-white'
+                              }`}
+                            >
+                              {lang}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.02] p-4">
+                        <p className="text-sm font-medium text-white">{locale === 'tr' ? 'Hero badge satırları' : 'Hero badge lines'}</p>
+                        <p className="mt-1 text-xs text-slate-400">
+                          {locale === 'tr'
+                            ? 'Aktif dil için satırları ekle, düzenle veya sil. Ana sayfada rastgele döner.'
+                            : 'Add, edit, or remove lines for the active language. They rotate randomly on home.'}
+                        </p>
+                        <div className="mt-4 space-y-2">
+                          {(heroBadgeDraft[locale] || ['']).map((line, index) => (
+                            <div key={`hero-badge-${locale}-${index}`} className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={line}
+                                onChange={(event) => handleHeroBadgeLineChange(locale, index, event.target.value)}
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+                                placeholder={locale === 'tr' ? `Satır ${index + 1}` : `Line ${index + 1}`}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeHeroBadgeLine(locale, index)}
+                                className="rounded-full border border-red-400/16 bg-red-400/8 px-3 py-2 text-xs text-red-100"
+                              >
+                                {locale === 'tr' ? 'Sil' : 'Delete'}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => addHeroBadgeLine(locale)}
+                          className="mt-3 rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200"
+                        >
+                          {locale === 'tr' ? 'Satır ekle' : 'Add line'}
+                        </button>
+                      </div>
                       <Field label={locale === 'tr' ? 'Ana başlık' : 'Primary title'} value={heroDraft.fullName} readOnly={false} onChange={handleHeroDraftChange('fullName')} />
                       <Field label={locale === 'tr' ? 'Alt başlık' : 'Subtitle'} value={heroDraft.title} readOnly={false} onChange={handleHeroDraftChange('title')} />
                       <Field label={locale === 'tr' ? 'Açıklama' : 'Description'} large value={heroDraft.description} readOnly={false} onChange={handleHeroDraftChange('description')} />
                       <Field label="CTA" value={heroDraft.ctaLabel} readOnly={false} onChange={handleHeroDraftChange('ctaLabel')} />
+                      <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.02] p-4">
+                        <p className="text-sm font-medium text-white">{locale === 'tr' ? 'Sayfa başlık metinleri' : 'Page heading copy'}</p>
+                        <p className="mt-1 text-xs text-slate-400">{locale === 'tr' ? 'Her sayfa için üst etiket, başlık ve açıklama alanlarını düzenle.' : 'Manage eyebrow, title, and description for each public page.'}</p>
+                        <div className="mt-4 space-y-3">
+                          {[
+                            ['projects', locale === 'tr' ? 'Projeler' : 'Projects'],
+                            ['writings', locale === 'tr' ? 'Yazılar' : 'Writings'],
+                            ['resume', locale === 'tr' ? 'Özgeçmiş' : 'Resume'],
+                            ['contact', locale === 'tr' ? 'İletişim' : 'Contact'],
+                          ].map(([pageKey, pageLabel]) => (
+                            <div key={pageKey} className="rounded-xl border border-white/10 bg-slate-950/45 p-3">
+                              <p className="mb-2 text-xs uppercase tracking-[0.22em] text-slate-400">{pageLabel}</p>
+                              <div className="grid gap-3">
+                                <Field label={locale === 'tr' ? 'Üst etiket' : 'Eyebrow'} value={pageSectionDraft[pageKey]?.eyebrow || ''} readOnly={false} onChange={handlePageSectionDraftChange(pageKey, 'eyebrow')} />
+                                <Field label={locale === 'tr' ? 'Başlık' : 'Title'} value={pageSectionDraft[pageKey]?.title || ''} readOnly={false} onChange={handlePageSectionDraftChange(pageKey, 'title')} />
+                                <Field label={locale === 'tr' ? 'Açıklama' : 'Description'} large value={pageSectionDraft[pageKey]?.description || ''} readOnly={false} onChange={handlePageSectionDraftChange(pageKey, 'description')} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                       <Field label={locale === 'tr' ? 'About başlığı' : 'About eyebrow'} value={aboutDraft.eyebrow} readOnly={false} onChange={handleAboutDraftChange('eyebrow')} />
                       <Field label={locale === 'tr' ? 'About ana başlık' : 'About title'} value={aboutDraft.title} readOnly={false} onChange={handleAboutDraftChange('title')} />
                       <Field label={locale === 'tr' ? 'About açıklama' : 'About description'} large value={aboutDraft.description} readOnly={false} onChange={handleAboutDraftChange('description')} />
@@ -1197,7 +2142,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
                           </div>
                           <div className="mt-4 flex flex-wrap gap-2">
                             <button type="button" onClick={() => handleEditTech(item, index)} className="rounded-full border border-white/10 bg-white/6 px-3 py-1 text-xs text-slate-200">{locale === 'tr' ? 'Düzenle' : 'Edit'}</button>
-                            <button type="button" onClick={() => handleArchiveTech(item)} className="rounded-full border border-red-400/16 bg-red-400/8 px-3 py-1 text-xs text-red-100">{locale === 'tr' ? 'Arşivle' : 'Archive'}</button>
+                            <button type="button" onClick={() => handleArchiveTech(item)} className="rounded-full border border-red-400/16 bg-red-400/8 px-3 py-1 text-xs text-red-100">{locale === 'tr' ? 'Sil' : 'Delete'}</button>
                           </div>
                         </div>
                       ))}
@@ -1206,8 +2151,8 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
                 </div>
               </AdminSection>
 
-              <AdminSection id="projects" data={sections.projects}><Inventory rows={projectRows} labels={locale === 'tr' ? ['Düzenle', 'Kopyala', 'Arşivle'] : ['Edit', 'Duplicate', 'Archive']} addLabel={locale === 'tr' ? 'Proje ekle' : 'Add project'} hasStack emptyLabel={locale === 'tr' ? 'Henüz proje verisi yok.' : 'No project data yet.'} onAdd={handleAddProject} onEdit={handleEditProject} onDuplicate={handleDuplicateProject} onArchive={handleArchiveProject} /></AdminSection>
-              <AdminSection id="writings" data={sections.writings}><Inventory rows={writingRows} labels={locale === 'tr' ? ['Düzenle', 'Kopyala', 'Arşivle'] : ['Edit', 'Duplicate', 'Archive']} addLabel={locale === 'tr' ? 'Yazı ekle' : 'Add article'} emptyLabel={locale === 'tr' ? 'Henüz yazı verisi yok.' : 'No writing data yet.'} onAdd={handleAddArticle} onEdit={handleEditArticle} onDuplicate={handleDuplicateArticle} onArchive={handleArchiveArticle} /></AdminSection>
+              <AdminSection id="projects" data={sections.projects}><Inventory rows={projectRows} labels={locale === 'tr' ? ['Düzenle', 'Kopyala', 'Sil'] : ['Edit', 'Duplicate', 'Delete']} addLabel={locale === 'tr' ? 'Proje ekle' : 'Add project'} hasStack emptyLabel={locale === 'tr' ? 'Henüz proje verisi yok.' : 'No project data yet.'} onAdd={handleAddProject} onEdit={handleEditProject} onDuplicate={handleDuplicateProject} onArchive={handleArchiveProject} /></AdminSection>
+              <AdminSection id="writings" data={sections.writings}><Inventory rows={writingRows} labels={locale === 'tr' ? ['Düzenle', 'Kopyala', 'Sil'] : ['Edit', 'Duplicate', 'Delete']} addLabel={locale === 'tr' ? 'Yazı ekle' : 'Add article'} emptyLabel={locale === 'tr' ? 'Henüz yazı verisi yok.' : 'No writing data yet.'} showDuplicate={false} onAdd={handleAddArticle} onEdit={handleEditArticle} onArchive={handleArchiveArticle} /></AdminSection>
 
               <AdminSection id="resume" data={sections.resume}>
                 <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
@@ -1233,7 +2178,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
                   </div>
                   <div className="rounded-[1.7rem] border border-white/10 bg-[#f5f5f1] p-6 text-slate-950">
                     <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Public viewer</p>
-                    <h3 className="mt-4 text-3xl font-semibold">{adminHero?.fullName || 'Fatih Ozkurt'}</h3>
+                    <h3 className="mt-4 text-3xl font-semibold">{adminHero?.fullName || 'Fatih Özkurt'}</h3>
                     <p className="mt-2 text-lg text-slate-700">{adminHero?.title || 'Java Backend Developer'}</p>
                     <div className="mt-8 rounded-[1.4rem] border border-slate-300 bg-white px-5 py-4 text-sm leading-7 text-slate-700">
                       {locale === 'tr' ? 'Viewer alanı productionda gerçek PDF ile değiştirilecek şekilde hazır durumda.' : 'Viewer area is already prepared to be replaced by the production PDF asset.'}
@@ -1320,9 +2265,76 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
                     </div>
                   ))}
                 </div>
+                <div className="mt-4 rounded-[1.7rem] border border-white/10 bg-slate-950/45 p-5">
+                  <p className="text-sm font-medium text-white">{locale === 'tr' ? 'Hesap ayarları' : 'Account settings'}</p>
+                  <p className="mt-1 text-sm text-slate-400">{locale === 'tr' ? 'Kullanıcı adı ve şifreni güvenli biçimde güncelle.' : 'Update username and password securely.'}</p>
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <label className="block space-y-1.5">
+                      <span className="relative -top-1 pl-3 text-sm text-slate-300">{locale === 'tr' ? 'Mevcut şifre' : 'Current password'}</span>
+                      <div className="relative">
+                        <input
+                          type={showCurrentCredentialPassword ? 'text' : 'password'}
+                          value={credentialsDraft.currentPassword}
+                          onChange={handleCredentialsDraftChange('currentPassword')}
+                          className="password-field w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 pr-12 text-sm text-white outline-none placeholder:text-slate-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrentCredentialPassword((current) => !current)}
+                          className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white"
+                          aria-label={showCurrentCredentialPassword ? (locale === 'tr' ? 'Şifreyi gizle' : 'Hide password') : (locale === 'tr' ? 'Şifreyi göster' : 'Show password')}
+                        >
+                          {showCurrentCredentialPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </label>
+                    <Field label={locale === 'tr' ? 'Yeni kullanıcı adı (opsiyonel)' : 'New username (optional)'} value={credentialsDraft.newUsername} readOnly={false} onChange={handleCredentialsDraftChange('newUsername')} />
+                    <label className="block space-y-1.5 md:col-span-2">
+                      <span className="relative -top-1 pl-3 text-sm text-slate-300">{locale === 'tr' ? 'Yeni şifre (opsiyonel)' : 'New password (optional)'}</span>
+                      <div className="relative">
+                        <input
+                          type={showNewCredentialPassword ? 'text' : 'password'}
+                          value={credentialsDraft.newPassword}
+                          onChange={handleCredentialsDraftChange('newPassword')}
+                          className="password-field w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 pr-12 text-sm text-white outline-none placeholder:text-slate-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewCredentialPassword((current) => !current)}
+                          className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white"
+                          aria-label={showNewCredentialPassword ? (locale === 'tr' ? 'Şifreyi gizle' : 'Hide password') : (locale === 'tr' ? 'Şifreyi göster' : 'Show password')}
+                        >
+                          {showNewCredentialPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </label>
+                  </div>
+                  <div className="mt-4">
+                    <button type="button" onClick={handleUpdateCredentials} className="button-primary rounded-full px-5 py-2.5 text-sm font-semibold">
+                      {locale === 'tr' ? 'Hesap bilgilerini güncelle' : 'Update account credentials'}
+                    </button>
+                  </div>
+                </div>
               </AdminSection>
             </div>
           </div>
+          <AdminEditorModal
+            modal={editorModal}
+            values={editorValues}
+            error={editorError}
+            onChange={(name, value) => setEditorValues((current) => ({ ...current, [name]: value }))}
+            onClose={closeEditor}
+            onSubmit={submitEditor}
+            busy={isBusy}
+            locale={locale}
+          />
+          <AdminConfirmModal
+            modal={confirmModal}
+            onClose={closeConfirm}
+            onConfirm={submitConfirm}
+            busy={isBusy}
+            locale={locale}
+          />
         </div>
       </div>
     )
@@ -1340,7 +2352,6 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
             <p className="text-xs uppercase tracking-[0.34em] text-slate-500">{forgotMode ? copy.passwordReset : copy.adminLogin}</p>
             {forgotMode ? (
               <form className="mt-6 space-y-5" onSubmit={handleForgotPassword}>
-                <label className="block space-y-1.5"><span className="relative -top-1 pl-3 text-sm text-slate-300">{copy.email}</span><input type="email" autoComplete="email" value={resetEmail} onChange={(event) => setResetEmail(event.target.value)} placeholder="you@example.com" className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500" /></label>
                 <p className="text-sm leading-7 text-slate-400">{copy.resetHint}</p>
                 {authError ? <p className="text-sm text-rose-300">{authError}</p> : null}
                 {authInfo ? <p className="text-sm text-emerald-300">{authInfo}</p> : null}
@@ -1350,7 +2361,28 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
             ) : (
               <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
                 <label className="block space-y-1.5"><span className="relative -top-1 pl-3 text-sm text-slate-300">{copy.username}</span><input name="username" type="text" autoComplete="username" value={form.username} onChange={handleChange} placeholder="antesionn" className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500" /></label>
-                <label className="block space-y-1.5"><span className="relative -top-1 pl-3 text-sm text-slate-300">{copy.password}</span><input name="password" type="password" autoComplete="current-password" value={form.password} onChange={handleChange} placeholder="Min 8 + Aa + 0-9 + symbol" className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500" /></label>
+                <label className="block space-y-1.5">
+                  <span className="relative -top-1 pl-3 text-sm text-slate-300">{copy.password}</span>
+                  <div className="relative">
+                    <input
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      value={form.password}
+                      onChange={handleChange}
+                      placeholder="Min 8 + Aa + 0-9 + symbol"
+                      className="password-field w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 pr-12 text-sm text-white outline-none placeholder:text-slate-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white"
+                      aria-label={showPassword ? (locale === 'tr' ? 'Şifreyi gizle' : 'Hide password') : (locale === 'tr' ? 'Şifreyi göster' : 'Show password')}
+                    >
+                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                </label>
                 <p className="text-sm leading-6 text-slate-400">{copy.passwordRule}</p>
                 {authError ? <p className="text-sm text-rose-300">{authError}</p> : null}
                 {authInfo ? <p className="text-sm text-emerald-300">{authInfo}</p> : null}
@@ -1360,7 +2392,10 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
             )}
           </section>
         </div>
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
+
+
+

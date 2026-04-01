@@ -13,7 +13,7 @@ function mockPublicApiWithData() {
     if (url.includes('/api/v1/public/hero')) {
       payload = {
         welcomeText: 'Welcome to my corner of the internet',
-        fullName: 'Fatih Ozkurt',
+        fullName: 'Fatih Özkurt',
         title: 'Java Backend Developer',
         description: 'Secure APIs, disciplined service design, and reliable backend delivery.',
         ctaLabel: 'Explore',
@@ -100,10 +100,10 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('link', { name: /^home$/i })).toBeInTheDocument()
-    expect(screen.getAllByRole('heading', { name: /fatih ozkurt/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('heading', { name: /fatih özkurt/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/java backend developer/i).length).toBeGreaterThan(0)
-    expect(screen.getByRole('heading', { name: /selected projects\./i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /talk/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /projects i ship\./i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /let's contact\./i })).toBeInTheDocument()
     expect(screen.queryByText(/backend hook point/i)).not.toBeInTheDocument()
   })
 
@@ -156,7 +156,7 @@ describe('App', () => {
 
     expect(scrollSpy).toHaveBeenCalledOnce()
     expect(scrollSpy).toHaveBeenCalledWith({
-      top: 688,
+      top: 662,
       behavior: 'smooth',
     })
   })
@@ -164,8 +164,8 @@ describe('App', () => {
   it('opens and closes the project detail modal', async () => {
     render(<App />)
 
-    const openDetailsButton = await screen.findByRole('button', { name: /open details/i })
-    fireEvent.click(openDetailsButton)
+    const [projectCard] = await screen.findAllByRole('button', { name: /personal portfolio platform/i })
+    fireEvent.click(projectCard)
 
     expect(await screen.findByRole('dialog', undefined, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getAllByRole('heading', { name: /personal portfolio platform/i })).toHaveLength(2)
@@ -180,8 +180,8 @@ describe('App', () => {
   it('closes the project modal with escape', async () => {
     render(<App />)
 
-    const openDetailsButton = await screen.findByRole('button', { name: /open details/i })
-    fireEvent.click(openDetailsButton)
+    const [projectCard] = await screen.findAllByRole('button', { name: /personal portfolio platform/i })
+    fireEvent.click(projectCard)
     expect(await screen.findByRole('dialog', undefined, { timeout: 5000 })).toBeInTheDocument()
 
     fireEvent.keyDown(window, { key: 'Escape' })
@@ -209,10 +209,10 @@ describe('App', () => {
     await user.click(screen.getAllByRole('button', { name: /^TR$/ })[0])
 
     expect(screen.getByRole('link', { name: /ana sayfa/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /seçili projeler\./i })).toBeInTheDocument()
-    expect(screen.getByText(/hoş geldin/i)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /güvenilir backend mühendisliği\./i })).toBeInTheDocument()
-    expect(screen.getAllByRole('link', { name: /(keşfet|explore)/i }).length).toBeGreaterThan(0)
+    expect(screen.getByRole('heading', { name: /geliştirdiğim projeler\./i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /backend systems with production discipline\./i })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /güvenilir backend mühendisliği, gereksiz drama olmadan\./i })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /(projeleri keşfet|explore projects|explore)/i }).length).toBeGreaterThan(0)
   })
 
   it('switches the auth interface language to Turkish', async () => {

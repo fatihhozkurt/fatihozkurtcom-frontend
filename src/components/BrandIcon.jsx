@@ -78,13 +78,56 @@ function getPath(path) {
 }
 
 function getBrandIcon(name) {
-  return brandIconMap[name.toLowerCase()] ?? null
+  if (!name) {
+    return null
+  }
+
+  return brandIconMap[String(name).toLowerCase()] ?? null
 }
 
-export function BrandIcon({ name, size = 16, fallback, color }) {
-  const CustomIcon = customIconMap[name.toLowerCase()]
-  const icon = getBrandIcon(name)
+function isImageSource(value) {
+  if (typeof value !== 'string') {
+    return false
+  }
+
+  const normalized = value.trim().toLowerCase()
+  if (!normalized) {
+    return false
+  }
+
+  return (
+    normalized.startsWith('http://') ||
+    normalized.startsWith('https://') ||
+    normalized.startsWith('data:image/') ||
+    normalized.startsWith('/api/') ||
+    normalized.startsWith('/assets/') ||
+    normalized.startsWith('/uploads/') ||
+    normalized.startsWith('/') ||
+    /\.(svg|png|jpe?g|gif|webp|avif)(\?.*)?$/.test(normalized)
+  )
+}
+
+export function BrandIcon({ name, iconKey, size = 16, fallback, color }) {
+  const normalizedName = typeof name === 'string' ? name.trim() : ''
+  const normalizedIconKey = typeof iconKey === 'string' ? iconKey.trim() : ''
+  const lookupKey = normalizedIconKey && !isImageSource(normalizedIconKey) ? normalizedIconKey : normalizedName
+  const imageSource = isImageSource(normalizedIconKey) ? normalizedIconKey : null
+  const CustomIcon = customIconMap[lookupKey.toLowerCase()] ?? customIconMap[normalizedName.toLowerCase()]
+  const icon = getBrandIcon(lookupKey) ?? getBrandIcon(normalizedName)
   const FallbackIcon = fallback ?? Sparkles
+
+  if (imageSource) {
+    return (
+      <img
+        src={imageSource}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        style={{ width: size, height: size, objectFit: 'contain' }}
+      />
+    )
+  }
 
   if (CustomIcon) {
     return <CustomIcon size={size} />
