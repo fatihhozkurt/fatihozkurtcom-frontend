@@ -1,225 +1,94 @@
-# Fatih Ozkurt Portfolio Frontend
-### React + Vite One-Page Personal Website
+﻿# fatihozkurtcom Frontend
 
-This project is a modern one-page frontend application built for a backend developer portfolio.
-It is designed as the public surface of `fatihozkurt.com`, with a dark atmospheric visual language,
-responsive layout, polished UI motion, and a hidden `/auth` route reserved for the admin side.
+Frontend application for `fatihozkurt.com`.
 
-The main goal is to present backend-focused work through a frontend that feels
-clean, intentional, and production-aware rather than decorative.
+This project includes:
+- Public one-page portfolio surface
+- Hidden `/auth` admin panel UI
+- Responsive layouts for desktop/tablet/mobile
+- API-driven content rendering from backend
+- Rich project cards, modal details, pagination, and media gallery behavior
 
----
+## Stack
 
-## Technologies Used
-
-- React 19
-- Vite 7
+- React 19 + Vite 7
 - Tailwind CSS 4
-- pnpm
 - Lucide React
-- Vitest
-- Testing Library
-- ESLint
-- Docker
-- Nginx
+- Vitest + Testing Library
+- Nginx (container runtime)
+- Docker Compose
 
----
+## Features
 
-## Core Concepts
+- Locale switching (`en` / `tr`) with persistent UI locale
+- Header-aware section scrolling and active nav sync
+- API-backed hero/about/projects/writings/resume/contact rendering
+- Project detail modal with gallery slider support
+- Contact form with backend submit flow
+- Hidden admin route:
+  - `/auth`
+  - content CRUD orchestration
+  - file upload driven flows (resume/images/icons)
 
-- One-page architecture: smooth section-based public portfolio flow
-- Responsive design: desktop and mobile-friendly layout
-- Dark atmospheric UI: black fog, faded dot textures, muted sky-blue accents
-- Progressive reveal motion: sections and cards enter with controlled easing
-- Hidden admin entry: `/auth` exists but is not linked from the public UI
-- Content-first structure: projects, writings, contact links, and CV area are data-driven
-- Backend-ready frontend: placeholders and layout are prepared for later API integration
+## Environment
 
----
+Optional env:
 
-## Project Structure
+- `VITE_API_BASE_URL`
 
-```text
-src
- |- components
- |  |- AuthPortal.jsx
- |  |- Chrome.jsx
- |  `- ProjectModal.jsx
- |- test
- |  `- setup.js
- |- App.jsx
- |- App.test.jsx
- |- index.css
- |- main.jsx
- `- siteContent.js
+If empty, frontend falls back to current origin.
 
-public
- `- ...
-```
-
-### Architectural Notes
-
-- `App.jsx` contains the main page composition and hidden `/auth` surface switch
-- `siteContent.js` stores portfolio content as structured frontend data
-- `Chrome.jsx` contains reusable UI primitives such as section shells, headings, and tech pills
-- `ProjectModal.jsx` renders deep project details in an overlay
-- `AuthPortal.jsx` provides the hidden admin-facing entry screen and preview shell
-- `index.css` defines motion, layered atmosphere, surface styles, and shared button patterns
-
----
-
-## Current Features
-
-- Animated hero section with staged entrance
-- Section-based navigation with header-aware smooth scrolling
-- Tech stack marquee
-- Project cards with modal detail view
-- Medium article cards
-- CV preview section with download CTA
-- Contact links and contact form layout
-- Hidden `/auth` route
-- Hover states, motion polish, and visual hierarchy tuned for dark UI
-
----
-
-## Setup and Installation
-
-### 1. Install dependencies
+## Run Locally
 
 ```bash
 pnpm install
-```
-
-### 2. Start development server
-
-```bash
 pnpm dev
 ```
 
-Default local URL:
+Default dev URL:
+- `http://localhost:5173`
 
-- http://localhost:5173
-
----
-
-## Quality Checks
-
-### Run tests
+## Quality
 
 ```bash
 pnpm test
-```
-
-### Run lint
-
-```bash
+pnpm build
 pnpm lint
 ```
 
-### Build production bundle
+## Docker
 
 ```bash
-pnpm build
+docker compose up -d --build
 ```
 
-### Preview production build
+Default container URL:
+- `http://localhost`
 
-```bash
-pnpm preview
-```
-
-Preview URL is typically:
-
-- http://localhost:4173
-
----
+Health endpoint:
+- `http://localhost/health`
 
 ## Routes
 
-### Public Surface
+- Public: `/`
+- Auth UI: `/auth`
+- Reset password UI: `/auth/reset-password?token=...`
 
-- `/`
+## Notes for Production
 
-### Hidden Admin Entry
+- Keep `/auth` route undiscoverable from public nav
+- Point frontend and backend behind same domain/reverse proxy when possible
+- Ensure CSP, cache, and security headers are preserved at gateway level
+- Keep uploaded asset handling and mail flows validated through backend
 
-- `/auth`
+## Testing Coverage (current)
 
-This route is intentionally not exposed through the public navigation.
-
----
-
-## Docker
-
-Build and run with Docker Compose:
-
-```bash
-docker compose up --build -d
-```
-
-Application URL:
-
-- http://localhost:4173
-
-Health check endpoint:
-
-- http://localhost:4173/health
-
-Stop containers:
-
-```bash
-docker compose down
-```
-
-The Docker setup uses:
-
-- `pnpm` for dependency installation and build
-- multi-stage Docker build
-- `nginx` for static file serving
-- SPA fallback routing so `/auth` works correctly in the browser
+- Main public render and language switch
+- Navigation scroll behavior
+- Project modal open/close and escape close
+- Hidden auth route rendering
+- Empty-data rendering scenarios
 
 ---
 
-## Testing Scope
-
-The current test suite covers:
-
-- Main one-page render checks
-- Navigation and scroll behavior
-- Project modal open/close flow
-- Escape-based modal close behavior
-- Hidden `/auth` route rendering
-
----
-
-## Backend Integration Notes
-
-This frontend is currently UI-complete enough for visual iteration, but some areas are still
-prepared as integration-ready placeholders rather than fully wired production flows.
-
-Examples:
-
-- Project and article data are currently local
-- Contact form submit is not yet connected to a backend mail pipeline
-- CV viewer area is visually prepared for real asset delivery
-- `/auth` is currently a frontend shell, not a live authenticated admin workflow
-
----
-
-## Rights and Usage
-
-Copyright belongs to Fatih Ozkurt as the individual author of this project.
-
-This repository is published as a portfolio showcase.
-Unless explicit written permission is given, no license is granted for copying,
-redistributing, or reusing the source code, design, or branded content.
-
----
-
-## Conclusion
-
-This project demonstrates how a personal portfolio frontend can be built with
-production-style UI discipline, balancing aesthetics, interaction quality,
-and future backend integration needs.
-
-It is intentionally designed to support a larger platform vision:
-public portfolio surface outside, secured admin capabilities behind `/auth`.
+For server rollout, pair this repo with backend deployment and verify `/auth -> save -> public reflection` after release.
