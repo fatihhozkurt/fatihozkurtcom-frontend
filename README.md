@@ -65,6 +65,9 @@ docker compose up -d --build
 Default container URL:
 - `http://localhost`
 
+Backend expectation:
+- Backend should be reachable at `http://localhost:8080`.
+
 Health endpoint:
 - `http://localhost/health`
 
