@@ -34,7 +34,7 @@ import { BackgroundEffects, InfoCard, Section, SectionHeading, TechPill } from '
 import { ProjectModal } from './components/ProjectModal'
 import { ResetPasswordPortal } from './components/ResetPasswordPortal'
 import { uiText } from './locales'
-import { getArticles, getContactLinks, getNavigationItems, getProjects, techStack } from './siteContent'
+import { getArticles, getContactLinks, getNavigationItems, getProjects } from './siteContent'
 
 const contactIconMap = {
   mail: Mail,
@@ -71,6 +71,47 @@ function localizedText(value, locale) {
 
 function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim())
+}
+
+function extractRegionFromLanguageTag(value) {
+  const candidate = String(value || '').split(';')[0].trim()
+  if (!candidate || candidate === '*') {
+    return null
+  }
+  const parts = candidate.split('-')
+  const region = parts.find((part) => /^[A-Za-z]{2}$/.test(part))
+  return region ? region.toUpperCase() : null
+}
+
+const TIMEZONE_REGION_FALLBACK = {
+  'Europe/Istanbul': 'TR',
+  'Europe/Berlin': 'DE',
+  'Europe/Amsterdam': 'NL',
+  'Europe/London': 'GB',
+  'America/New_York': 'US',
+  'America/Los_Angeles': 'US',
+  'Asia/Dubai': 'AE',
+}
+
+function resolveVisitCountryHint() {
+  if (typeof navigator !== 'undefined') {
+    const languageCandidates = [navigator.language, ...(Array.isArray(navigator.languages) ? navigator.languages : [])]
+    for (const candidate of languageCandidates) {
+      const region = extractRegionFromLanguageTag(candidate)
+      if (region) {
+        return region
+      }
+    }
+  }
+
+  if (typeof Intl !== 'undefined' && typeof Intl.DateTimeFormat === 'function') {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    if (timezone && TIMEZONE_REGION_FALLBACK[timezone]) {
+      return TIMEZONE_REGION_FALLBACK[timezone]
+    }
+  }
+
+  return 'Unknown'
 }
 
 function parseHeroBadgeLines(candidate) {
@@ -321,7 +362,7 @@ function PublicSite({ locale, setLocale }) {
   const fallbackContactLinks = useMemo(() => getContactLinks(locale), [locale])
   const [heroContent, setHeroContent] = useState(null)
   const [aboutContent, setAboutContent] = useState(null)
-  const [techItems, setTechItems] = useState(techStack)
+  const [techItems, setTechItems] = useState([])
   const [projects, setProjects] = useState(fallbackProjects)
   const [articles, setArticles] = useState(fallbackArticles)
   const [resumeContent, setResumeContent] = useState(null)
@@ -392,6 +433,14 @@ function PublicSite({ locale, setLocale }) {
     const start = (effectiveWritingPage - 1) * listPageSize
     return articles.slice(start, start + listPageSize)
   }, [articles, effectiveWritingPage, listPageSize])
+  const shouldLoopTechRail = techItems.length >= 5
+  const techRailCopies = shouldLoopTechRail ? 3 : 1
+  const renderedTechItems = useMemo(() => {
+    if (!shouldLoopTechRail) {
+      return techItems
+    }
+    return Array.from({ length: techRailCopies }, () => techItems).flat()
+  }, [shouldLoopTechRail, techItems, techRailCopies])
 
   const resolvedHeroContent = useMemo(() => resolveLocalizedContent(heroContent, locale), [heroContent, locale])
   const resolvedAboutContent = useMemo(() => resolveLocalizedContent(aboutContent, locale), [aboutContent, locale])
@@ -464,7 +513,7 @@ function PublicSite({ locale, setLocale }) {
           category: item.category || 'backend',
           icon: item.iconName,
         }))
-        setTechItems(mappedTech.length > 0 ? mappedTech : techStack)
+        setTechItems(mappedTech)
         const mappedProjects = safeList(projectsResponse).map((project) => mapProjectSummary(project, locale))
         setProjects(mappedProjects)
 
@@ -519,6 +568,7 @@ function PublicSite({ locale, setLocale }) {
       } catch (error) {
         if (!cancelled) {
           console.warn('Public content load failed.', error)
+          setTechItems([])
           setProjects([])
           setArticles([])
           setContactLinks([
@@ -541,7 +591,7 @@ function PublicSite({ locale, setLocale }) {
     postVisit(
       {
         path: window.location.pathname || '/',
-        country: 'Unknown',
+        country: resolveVisitCountryHint(),
       },
       locale,
     ).catch(() => {})
@@ -735,10 +785,13 @@ function PublicSite({ locale, setLocale }) {
       return 0
     }
 
-    return track.scrollWidth / 3
+    return track.scrollWidth / techRailCopies
   }
 
   const normalizeTechScrollLeft = (value, loopWidth) => {
+    if (!shouldLoopTechRail) {
+      return value
+    }
     if (loopWidth <= 0) {
       return value
     }
@@ -788,9 +841,11 @@ function PublicSite({ locale, setLocale }) {
 
     const syncTechPosition = () => {
       const loopWidth = getTechLoopWidth()
-      if (loopWidth > 0) {
+      if (shouldLoopTechRail && loopWidth > 0) {
         container.scrollLeft = loopWidth
+        return
       }
+      container.scrollLeft = 0
     }
 
     syncTechPosition()
@@ -807,9 +862,17 @@ function PublicSite({ locale, setLocale }) {
     return () => {
       resizeObserver.disconnect()
     }
-  }, [])
+  }, [shouldLoopTechRail, techRailCopies, techItems.length])
 
   useEffect(() => {
+    if (!shouldLoopTechRail) {
+      if (techIntervalRef.current) {
+        clearInterval(techIntervalRef.current)
+        techIntervalRef.current = null
+      }
+      return undefined
+    }
+
     if (techPaused) {
       if (techIntervalRef.current) {
         clearInterval(techIntervalRef.current)
@@ -838,9 +901,12 @@ function PublicSite({ locale, setLocale }) {
         techIntervalRef.current = null
       }
     }
-  }, [techPaused])
+  }, [shouldLoopTechRail, techPaused])
 
   const handleTechWheel = (event) => {
+    if (!shouldLoopTechRail) {
+      return
+    }
     const container = techScrollerRef.current
     const loopWidth = getTechLoopWidth()
     if (!container) {
@@ -859,6 +925,9 @@ function PublicSite({ locale, setLocale }) {
   }
 
   const handleTechPointerDown = (event) => {
+    if (!shouldLoopTechRail) {
+      return
+    }
     const container = techScrollerRef.current
     if (!container) {
       return
@@ -1150,9 +1219,15 @@ function PublicSite({ locale, setLocale }) {
               onLostPointerCapture={handleTechPointerEnd}
             >
               <div ref={techTrackRef} className="marquee-track flex min-w-max gap-4">
-                {[...techItems, ...techItems, ...techItems].map((item, index) => (
-                  <TechPill key={`${item.name}-${index}`} item={item} />
-                ))}
+                {renderedTechItems.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-3 text-sm text-slate-400">
+                    {locale === 'tr' ? 'Henüz görünür tech stack verisi yok.' : 'No visible tech stack data yet.'}
+                  </div>
+                ) : (
+                  renderedTechItems.map((item, index) => (
+                    <TechPill key={`${item.name}-${index}`} item={item} />
+                  ))
+                )}
               </div>
             </div>
           </div>

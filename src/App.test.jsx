@@ -256,5 +256,6 @@ describe('App', () => {
     })
 
     expect(screen.queryByText(/read on medium/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/no visible tech stack data yet\./i)).toBeInTheDocument()
   })
 })
