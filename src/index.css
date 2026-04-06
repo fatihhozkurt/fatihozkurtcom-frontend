@@ -421,14 +421,20 @@ button:disabled {
 @media (max-width: 767px) {
   .projects-rail,
   .writings-rail {
-    padding-inline: 0.35rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    padding-inline: 0;
+    overflow: visible;
+    scroll-snap-type: none;
   }
 
   .projects-rail-item,
   .writings-rail-item {
-    flex: 0 0 86vw;
-    max-width: 24rem;
-    scroll-snap-align: start;
+    flex: initial;
+    width: 100%;
+    max-width: none;
+    scroll-snap-align: unset;
   }
 
   .projects-rail-item article,

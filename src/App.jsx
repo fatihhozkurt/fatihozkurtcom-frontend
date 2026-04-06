@@ -1159,7 +1159,7 @@ function PublicSite({ locale, setLocale }) {
                       }}
                       className="surface-card relative flex min-h-full cursor-pointer overflow-visible rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-4 transition hover:-translate-y-1 hover:border-sky-300/25"
                     >
-                      <div className="absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top_left,_rgba(253,186,116,0.16),transparent_58%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),transparent_58%)]" />
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-20 rounded-t-[1.6rem] bg-[radial-gradient(circle_at_top_left,_rgba(253,186,116,0.16),transparent_58%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),transparent_58%)]" />
                       <div className="relative flex h-full flex-1 flex-col">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex items-start justify-between gap-3">
