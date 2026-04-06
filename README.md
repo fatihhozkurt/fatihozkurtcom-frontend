@@ -81,6 +81,7 @@ Health endpoint:
 
 - Keep `/auth` route undiscoverable from public nav
 - Point frontend and backend behind same domain/reverse proxy when possible
+- Handle `/api/*` routing at the host reverse-proxy layer (not inside frontend container Nginx)
 - Ensure CSP, cache, and security headers are preserved at gateway level
 - Keep uploaded asset handling and mail flows validated through backend
 
