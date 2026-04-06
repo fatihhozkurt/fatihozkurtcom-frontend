@@ -309,7 +309,9 @@ function CharacterSticker({ src, className = '' }) {
   )
 }
 
-const LIST_PAGE_SIZE = 6
+const DESKTOP_LIST_PAGE_SIZE = 6
+const MOBILE_LIST_PAGE_SIZE = 3
+const MOBILE_MEDIA_QUERY = '(max-width: 767px)'
 
 function PublicSite({ locale, setLocale }) {
   const text = uiText[locale]
@@ -341,6 +343,12 @@ function PublicSite({ locale, setLocale }) {
   const [projectModalOpen, setProjectModalOpen] = useState(false)
   const [projectPage, setProjectPage] = useState(1)
   const [writingPage, setWritingPage] = useState(1)
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return false
+    }
+    return window.matchMedia(MOBILE_MEDIA_QUERY).matches
+  })
   const [techPaused, setTechPaused] = useState(false)
   const [techDragging, setTechDragging] = useState(false)
   const techScrollerRef = useRef(null)
@@ -371,18 +379,19 @@ function PublicSite({ locale, setLocale }) {
     },
     [effectiveSelectedProjectId, projectDetailById, projects],
   )
-  const totalProjectPages = Math.max(1, Math.ceil(projects.length / LIST_PAGE_SIZE))
-  const totalWritingPages = Math.max(1, Math.ceil(articles.length / LIST_PAGE_SIZE))
+  const listPageSize = isMobileViewport ? MOBILE_LIST_PAGE_SIZE : DESKTOP_LIST_PAGE_SIZE
+  const totalProjectPages = Math.max(1, Math.ceil(projects.length / listPageSize))
+  const totalWritingPages = Math.max(1, Math.ceil(articles.length / listPageSize))
   const effectiveProjectPage = Math.min(projectPage, totalProjectPages)
   const effectiveWritingPage = Math.min(writingPage, totalWritingPages)
   const visibleProjects = useMemo(() => {
-    const start = (effectiveProjectPage - 1) * LIST_PAGE_SIZE
-    return projects.slice(start, start + LIST_PAGE_SIZE)
-  }, [effectiveProjectPage, projects])
+    const start = (effectiveProjectPage - 1) * listPageSize
+    return projects.slice(start, start + listPageSize)
+  }, [effectiveProjectPage, listPageSize, projects])
   const visibleArticles = useMemo(() => {
-    const start = (effectiveWritingPage - 1) * LIST_PAGE_SIZE
-    return articles.slice(start, start + LIST_PAGE_SIZE)
-  }, [articles, effectiveWritingPage])
+    const start = (effectiveWritingPage - 1) * listPageSize
+    return articles.slice(start, start + listPageSize)
+  }, [articles, effectiveWritingPage, listPageSize])
 
   const resolvedHeroContent = useMemo(() => resolveLocalizedContent(heroContent, locale), [heroContent, locale])
   const resolvedAboutContent = useMemo(() => resolveLocalizedContent(aboutContent, locale), [aboutContent, locale])
@@ -537,6 +546,26 @@ function PublicSite({ locale, setLocale }) {
       locale,
     ).catch(() => {})
   }, [locale])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined
+    }
+
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY)
+    const handleChange = (event) => {
+      setIsMobileViewport(event.matches)
+    }
+
+    setIsMobileViewport(mediaQuery.matches)
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
+
+    mediaQuery.addListener(handleChange)
+    return () => mediaQuery.removeListener(handleChange)
+  }, [])
 
   useEffect(() => {
     setProjectPage(1)
