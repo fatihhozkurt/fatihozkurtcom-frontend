@@ -1,10 +1,10 @@
-export function getNavigationItems(locale) {
+﻿export function getNavigationItems(locale) {
   if (locale === 'tr') {
     return [
       { id: 'home', label: 'Ana Sayfa' },
       { id: 'about', label: 'Hakkımda' },
       { id: 'projects', label: 'Projeler' },
-      { id: 'writings', label: 'Medium' },
+      { id: 'writings', label: 'Yazılar' },
       { id: 'resume', label: 'Özgeçmiş' },
       { id: 'contact', label: 'İletişim' },
     ]
@@ -14,7 +14,7 @@ export function getNavigationItems(locale) {
     { id: 'home', label: 'Home' },
     { id: 'about', label: 'About' },
     { id: 'projects', label: 'Projects' },
-    { id: 'writings', label: 'Medium' },
+    { id: 'writings', label: 'Writings' },
     { id: 'resume', label: 'Resume' },
     { id: 'contact', label: 'Contact' },
   ]
@@ -27,111 +27,145 @@ export const techStack = [
   { name: 'PostgreSQL', category: 'database', icon: 'database' },
   { name: 'Redis', category: 'cache', icon: 'zap' },
   { name: 'OpenSearch', category: 'observability', icon: 'scan-search' },
+  { name: 'Apache Kafka', category: 'platform', icon: 'message-square' },
   { name: 'Docker', category: 'platform', icon: 'container' },
   { name: 'MinIO', category: 'storage', icon: 'box' },
+  { name: 'Liquibase', category: 'platform', icon: 'git-branch-plus' },
+  { name: 'Flyway', category: 'platform', icon: 'plane' },
+  { name: 'GraphQL', category: 'backend', icon: 'network' },
+  { name: 'SOAP', category: 'backend', icon: 'network' },
   { name: 'React', category: 'frontend', icon: 'monitor' },
   { name: 'Tailwind CSS', category: 'frontend', icon: 'palette' },
-  { name: 'REST APIs', category: 'backend', icon: 'network' },
-  { name: 'JWT + CSRF', category: 'security', icon: 'key-round' },
 ]
 
 export function getProjects(locale) {
   if (locale === 'tr') {
     return [
       {
-        id: 'portfolio-platform',
-        category: 'kişisel proje',
-        title: 'Personal Portfolio Platform',
+        id: 'fatihozkurtcom-platform',
+        category: 'kişisel platform',
+        title: 'fatihozkurt.com Platformu',
         accent: 'Portfolio',
         summary:
-          'React ve Spring Boot tabanlı, içerikleri yönetilebilir ve güvenlik odaklı kurgulanmış kişisel portfolyo platformu.',
-        stack: ['Java', 'Spring Boot', 'PostgreSQL', 'Redis', 'React', 'Tailwind'],
-        repository: 'https://github.com/fatihozkurt',
-        liveUrl: '#',
+          'React + Vite frontend ve Spring Boot backend ile geliştirdiğim, güvenli admin akışlarına sahip ve backend-driven içerik yöneten kişisel platform.',
+        stack: ['Java', 'Spring Boot', 'Spring Security', 'PostgreSQL', 'Redis', 'OpenSearch', 'MinIO', 'React', 'Vite', 'Tailwind CSS', 'Docker', 'Nginx'],
+        repository: 'https://github.com/fatihhozkurt/fatihhozkurt',
+        liveUrl: 'https://fatihozkurt.com',
         readme: {
           intro:
-            'Kendi çalışmalarımı, yazılarımı ve özgeçmişimi tek bir sade yüzeyde sunmak için tasarladığım kişisel portfolyo projesi.',
+            'Portföyümü sadece görsel bir vitrin değil, güvenlik ve operasyon disiplinini gerçek anlamda gösteren bir ürün gibi kurguladım.',
           sections: [
             {
               title: 'Öne çıkanlar',
               items: [
-                'One-page public arayüz',
-                'Ayrı admin girişi ve yönetim alanı',
-                'Projeler, Medium yazıları ve CV için yönetilebilir içerik yapısı',
+                'Public ve admin API ayrımı',
+                'JWT + CSRF temelli güvenli admin yüzeyi',
+                'Projeler, yazılar ve CV için backend kontrollü içerik yönetimi',
               ],
             },
             {
-              title: 'Teknik notlar',
+              title: 'Teknik yapı',
               items: [
-                'Spring Boot REST API yaklaşımı',
-                'PostgreSQL, Redis ve MinIO ile uyumlu altyapı planı',
-                'Docker ve env tabanlı çalışma mantığı',
+                'Spring Boot katmanlı mimari + validation + audit yaklaşımı',
+                'PostgreSQL, Redis ve OpenSearch ile veri + analiz kurgusu',
+                'MinIO ile dosya varlık yönetimi ve Docker tabanlı dağıtım',
               ],
             },
           ],
         },
       },
       {
-        id: 'traffic-insights',
-        category: 'backend demo',
-        title: 'Traffic Insights',
-        accent: 'Analytics',
+        id: 'backdroply-ecosystem',
+        category: 'saas + mobile',
+        title: 'Backdroply Ecosystem',
+        accent: 'SaaS',
         summary:
-          'API trafiği, filtreleme, arama ve toplulaştırma senaryoları için OpenSearch odaklı Spring Boot demo uygulaması.',
-        stack: ['Java', 'Spring Boot', 'OpenSearch', 'PostgreSQL'],
-        repository: 'https://github.com/fatihozkurt',
-        liveUrl: '#',
+          'Web, mobile, Java backend, FastAPI AI engine ve infra repo katmanlarından oluşan çoklu-repo bir medya işleme ekosistemi.',
+        stack: ['Java', 'Spring Boot', 'Python', 'FastAPI', 'React', 'Tailwind CSS', 'Expo', 'RabbitMQ', 'JWT', 'OAuth', 'CSRF', 'Docker'],
+        repository: 'https://github.com/fatihhozkurt/backdroply-web',
+        liveUrl: 'https://github.com/fatihhozkurt/backdroply-infra',
         readme: {
           intro:
-            'OpenSearch ile backend tarafında arama, filtreleme ve istatistik üretimini daha gerçekçi bir senaryoda göstermek için geliştirdiğim çalışma.',
+            'Backdroply tarafında hedefim, kullanıcı deneyimi güçlü bir ürünü backend güvenliği ve operasyonel dayanıklılıkla birlikte yürütmekti.',
           sections: [
             {
               title: 'Kapsam',
               items: [
-                'Trafik kayıtlarının indekslenmesi',
-                'Arama ve filtreleme endpointleri',
-                'İstatistik ve aggregation odaklı sonuçlar',
+                'Google OAuth tabanlı giriş + JWT cookie/bearer oturum akışları',
+                'Asenkron medya işleme kuyruğu ve durum takibi',
+                'Token-wallet ve kullanım odaklı iş kuralı yönetimi',
               ],
             },
             {
-              title: 'Odak noktası',
+              title: 'Repo dağılımı',
               items: [
-                'Temiz katmanlı mimari',
-                'DTO ve validation kullanımı',
-                'Gözlemlenebilir veri akışı',
+                'backdroply-web: React + Tailwind kullanıcı arayüzü',
+                'backdroply-mobile: Expo tabanlı mobil uygulama',
+                'backdroply-backend / engine / infra: servis, AI ve dağıtım katmanları',
               ],
             },
           ],
         },
       },
       {
-        id: 'auth-content-admin',
-        category: 'full stack',
-        title: 'Auth and Content Admin',
-        accent: 'Admin',
+        id: 'opensearch-traffic-insights',
+        category: 'observability demo',
+        title: 'OpenSearch Traffic Insights',
+        accent: 'Analytics',
         summary:
-          'Authentication, yetkilendirme ve içerik yönetimi akışlarını tek panelde toplayan admin odaklı uygulama tasarımı.',
-        stack: ['Java', 'Spring Security', 'React', 'MinIO'],
-        repository: 'https://github.com/fatihozkurt',
+          'API trafiği için arama, filtreleme, sıralama ve aggregation senaryolarını Spring Boot + OpenSearch ile üretim benzeri şekilde modellediğim demo.',
+        stack: ['Java', 'Spring Boot', 'OpenSearch', 'PostgreSQL', 'Docker', 'REST API'],
+        repository: 'https://github.com/fatihhozkurt/opensearch-traffic-insights',
         liveUrl: '#',
         readme: {
           intro:
-            'Güvenli giriş, şifre sıfırlama ve içerik yönetimi gibi akışları daha düzenli ve sürdürülebilir kılmak için hazırlanan admin odaklı çalışma.',
+            'Bu projede, log/traffic analitiğini sadece sorgu yazmak değil sistem tasarımı problemi olarak ele aldım.',
           sections: [
             {
-              title: 'İçerik yönetimi',
+              title: 'Teknik kapsam',
               items: [
-                'Hero alanı ve metin güncelleme',
-                'Proje ve yazı kartlarını yönetme',
-                'CV ve iletişim alanlarını güncelleme',
+                'Full-text arama + çoklu filtreleme endpointleri',
+                'Aggregation tabanlı istatistik çıktıları',
+                'Soft delete farkındalığı olan indeksleme/sorgulama yaklaşımı',
               ],
             },
             {
-              title: 'Güvenlik',
+              title: 'Neden önemli',
               items: [
-                'Authentication ve oturum yönetimi',
-                'Rate limit ve audit log yaklaşımı',
-                'Yetki sınırları için ayrık admin yüzeyi',
+                'Observability ve güvenlik analizine uygun veri modeli',
+                'Backend tarafında temiz mimariyi koruyan gerçekçi bir demo',
+              ],
+            },
+          ],
+        },
+      },
+      {
+        id: 'marketplace-app',
+        category: 'backend uygulama',
+        title: 'Marketplace App',
+        accent: 'Commerce',
+        summary:
+          'Spring Boot tabanlı marketplace uygulaması; kullanıcı, ürün, sepet, sipariş ve cüzdan modüllerini güvenli ve sürdürülebilir mimariyle birleştiriyor.',
+        stack: ['Java', 'Spring Boot', 'JPA', 'PostgreSQL', 'Redis', 'MapStruct', 'Maven'],
+        repository: 'https://github.com/fatihhozkurt/marketplace-app',
+        liveUrl: '#',
+        readme: {
+          intro:
+            'Temel e-ticaret akışlarını backend tarafında düzenli bir domain modeli ve temiz API kontratları ile kurguladığım çalışma.',
+          sections: [
+            {
+              title: 'Modüller',
+              items: [
+                'Kullanıcı, ürün, sepet, sipariş ve cüzdan yönetimi',
+                'REST API + validation + soft delete yaklaşımı',
+                'Redis cache ve fatura çıktısı desteği',
+              ],
+            },
+            {
+              title: 'Mühendislik yaklaşımı',
+              items: [
+                'Katmanlı mimari ve bakım kolaylığı odaklı tasarım',
+                'Güvenli konfigürasyon ve net servis sorumlulukları',
               ],
             },
           ],
@@ -142,99 +176,130 @@ export function getProjects(locale) {
 
   return [
     {
-      id: 'portfolio-platform',
-      category: 'personal project',
-      title: 'Personal Portfolio Platform',
+      id: 'fatihozkurtcom-platform',
+      category: 'personal platform',
+      title: 'fatihozkurt.com Platform',
       accent: 'Portfolio',
       summary:
-        'A personal portfolio platform built with React and Spring Boot, designed around manageable content and a security-minded structure.',
-      stack: ['Java', 'Spring Boot', 'PostgreSQL', 'Redis', 'React', 'Tailwind'],
-      repository: 'https://github.com/fatihozkurt',
-      liveUrl: '#',
+        'A full-stack portfolio platform I built with React + Vite and Spring Boot, including secure admin flows and backend-driven content.',
+      stack: ['Java', 'Spring Boot', 'Spring Security', 'PostgreSQL', 'Redis', 'OpenSearch', 'MinIO', 'React', 'Vite', 'Tailwind CSS', 'Docker', 'Nginx'],
+      repository: 'https://github.com/fatihhozkurt/fatihhozkurt',
+      liveUrl: 'https://fatihozkurt.com',
       readme: {
         intro:
-          'A personal platform designed to present my work, writing, and resume in a clean public surface with room for secure content management.',
+          'I designed this project as a real product surface, not just a static portfolio page, with security and delivery discipline built in.',
         sections: [
           {
             title: 'Highlights',
             items: [
-              'One-page public interface',
-              'Separate admin access and management surface',
-              'Manageable content for projects, writings, and resume assets',
+              'Public and admin API separation',
+              'JWT + CSRF secured admin workflow',
+              'Backend-controlled content lifecycle for projects, writings, and resume',
             ],
           },
           {
-            title: 'Technical notes',
+            title: 'Technical layout',
             items: [
-              'Spring Boot REST API approach',
-              'PostgreSQL, Redis, and MinIO friendly structure',
-              'Docker and environment-based runtime setup',
+              'Layered Spring Boot architecture with validation and audit thinking',
+              'PostgreSQL, Redis, and OpenSearch for persistence, speed, and analytics',
+              'MinIO-backed file assets and Docker-based deployment flow',
             ],
           },
         ],
       },
     },
     {
-      id: 'traffic-insights',
-      category: 'backend demo',
-      title: 'Traffic Insights',
-      accent: 'Analytics',
+      id: 'backdroply-ecosystem',
+      category: 'saas + mobile',
+      title: 'Backdroply Ecosystem',
+      accent: 'SaaS',
       summary:
-        'A Spring Boot demo focused on OpenSearch-backed traffic analysis, filtering, search, and aggregation use cases.',
-      stack: ['Java', 'Spring Boot', 'OpenSearch', 'PostgreSQL'],
-      repository: 'https://github.com/fatihozkurt',
-      liveUrl: '#',
+        'A multi-repo media-processing ecosystem built across web, mobile, Java backend, FastAPI AI engine, and infrastructure layers.',
+      stack: ['Java', 'Spring Boot', 'Python', 'FastAPI', 'React', 'Tailwind CSS', 'Expo', 'RabbitMQ', 'JWT', 'OAuth', 'CSRF', 'Docker'],
+      repository: 'https://github.com/fatihhozkurt/backdroply-web',
+      liveUrl: 'https://github.com/fatihhozkurt/backdroply-infra',
       readme: {
         intro:
-          'A focused backend demo that shows how search, filtering, and statistics can be structured cleanly around operational traffic data.',
+          'Backdroply is where I combined product UX goals with secure backend orchestration and operational reliability.',
         sections: [
           {
             title: 'Scope',
             items: [
-              'Traffic record indexing',
-              'Search and filtering endpoints',
-              'Statistics and aggregation outputs',
+              'Google OAuth login and JWT session flow (cookie + bearer)',
+              'Asynchronous media processing queue and job-status tracking',
+              'Token wallet and usage-aware business rules',
             ],
           },
           {
-            title: 'Focus',
+            title: 'Repository map',
             items: [
-              'Clean layered architecture',
-              'DTO and validation usage',
-              'Observable data flow',
+              'backdroply-web: React + Tailwind product UI',
+              'backdroply-mobile: Expo mobile client',
+              'backdroply-backend / engine / infra: service, AI, and deployment layers',
             ],
           },
         ],
       },
     },
     {
-      id: 'auth-content-admin',
-      category: 'full stack',
-      title: 'Auth and Content Admin',
-      accent: 'Admin',
+      id: 'opensearch-traffic-insights',
+      category: 'observability demo',
+      title: 'OpenSearch Traffic Insights',
+      accent: 'Analytics',
       summary:
-        'An admin-oriented application design that brings authentication, authorization, and content management flows into one surface.',
-      stack: ['Java', 'Spring Security', 'React', 'MinIO'],
-      repository: 'https://github.com/fatihozkurt',
+        'A Spring Boot + OpenSearch demo for API traffic search, filtering, sorting, and aggregation with production-style backend structure.',
+      stack: ['Java', 'Spring Boot', 'OpenSearch', 'PostgreSQL', 'Docker', 'REST API'],
+      repository: 'https://github.com/fatihhozkurt/opensearch-traffic-insights',
       liveUrl: '#',
       readme: {
         intro:
-          'A practical admin-focused project built around secure login flows, password reset, and manageable content operations.',
+          'In this project I treat traffic analytics as a system design problem, not only a query-writing exercise.',
         sections: [
           {
-            title: 'Content management',
+            title: 'Technical scope',
             items: [
-              'Hero and profile copy updates',
-              'Project and writing card management',
-              'Resume and contact area updates',
+              'Full-text search and multi-filter endpoints',
+              'Aggregation-oriented statistics outputs',
+              'Soft-delete-aware indexing and query patterns',
             ],
           },
           {
-            title: 'Security',
+            title: 'Why it matters',
             items: [
-              'Authentication and session flow design',
-              'Rate limit and audit log thinking',
-              'Separated admin surface for tighter access boundaries',
+              'Data model that supports observability and security analysis',
+              'A realistic demo that keeps clean architecture under load',
+            ],
+          },
+        ],
+      },
+    },
+    {
+      id: 'marketplace-app',
+      category: 'backend application',
+      title: 'Marketplace App',
+      accent: 'Commerce',
+      summary:
+        'A Spring Boot marketplace application with user, product, cart, order, and wallet modules built with maintainable service boundaries.',
+      stack: ['Java', 'Spring Boot', 'JPA', 'PostgreSQL', 'Redis', 'MapStruct', 'Maven'],
+      repository: 'https://github.com/fatihhozkurt/marketplace-app',
+      liveUrl: '#',
+      readme: {
+        intro:
+          'A practical e-commerce backend project where I focused on clean API contracts and a maintainable domain structure.',
+        sections: [
+          {
+            title: 'Modules',
+            items: [
+              'User, product, cart, order, and wallet management',
+              'REST APIs with validation and soft-delete handling',
+              'Redis caching and invoice export support',
+            ],
+          },
+          {
+            title: 'Engineering focus',
+            items: [
+              'Layered architecture with maintainability first',
+              'Secure configuration and explicit service responsibilities',
             ],
           },
         ],
@@ -247,56 +312,56 @@ export function getArticles(locale) {
   if (locale === 'tr') {
     return [
       {
-        id: 'secure-api-contracts',
-        title: 'Güvenli API kontratları nasıl sade kalır?',
+        id: 'opensearch-101',
+        title: 'OpenSearch 101: Telefonun Başında Çaresiz Bekliyorum (veriyi)',
         excerpt:
-          'Validation, DTO sınırları ve hata cevaplarını gereksiz karmaşıklık oluşturmadan nasıl daha okunabilir tuttuğuma dair kısa notlar.',
+          'OpenSearch tarafında gerçek trafik verisiyle arama, indeksleme ve analitik akışlarını sahadan örneklerle anlattığım yazı.',
+        readingTime: '7 dk okuma',
+        href: 'https://medium.com/@fatihozkurt/opensearch-101-telefonun-ba%C5%9F%C4%B1nda-%C3%A7aresiz-bekliyorum-veriyi-505b810f9175',
+      },
+      {
+        id: 'let-me-in-auth',
+        title: 'Let Me In: JWT, OAuth, Session, Cookie, Refresh Token, CSRF',
+        excerpt:
+          'Modern kimlik doğrulama ve oturum yönetimini güvenli ama anlaşılır bir backend akışına nasıl dönüştürdüğümü anlattığım rehber.',
+        readingTime: '9 dk okuma',
+        href: 'https://medium.com/@fatihozkurt/let-me-in-jwt-oauth-session-cookie-refresh-token-csrf-yani-neredeyse-arad%C4%B1%C4%9F%C4%B1m%C4%B1z-her-%C5%9Fey-f488a7f3e3f8',
+      },
+      {
+        id: 'cache-me-if-you-can',
+        title: 'Cache Me If You Can: Redis DB ve Caching',
+        excerpt:
+          'Redis cache desenleri, performans etkisi ve backend tarafında doğru kullanım kararlarını topladığım pratik notlar.',
         readingTime: '6 dk okuma',
-        href: 'https://medium.com/@fatihozkurt',
-      },
-      {
-        id: 'hardening-spring-auth',
-        title: 'Spring authentication akışlarını sağlamlaştırmak',
-        excerpt:
-          'Login, şifre sıfırlama ve brute-force koruması gibi başlıklarda daha düzenli bir backend yaklaşımı.',
-        readingTime: '8 dk okuma',
-        href: 'https://medium.com/@fatihozkurt',
-      },
-      {
-        id: 'observability-matters',
-        title: 'Observability neden baştan düşünülmeli?',
-        excerpt:
-          'Küçük projelerde bile log, metrik ve olay görünürlüğünün neden fark yarattığına dair kısa bir çerçeve.',
-        readingTime: '5 dk okuma',
-        href: 'https://medium.com/@fatihozkurt',
+        href: 'https://medium.com/@fatihozkurt/redis-ile-e%C4%9Flenceli-bir-yolculuk-nosqlden-cache-lemeye-f4c5ecc0124b',
       },
     ]
   }
 
   return [
     {
-      id: 'secure-api-contracts',
-      title: 'How secure API contracts stay readable',
+      id: 'opensearch-101',
+      title: 'OpenSearch 101: Telefonun Başında Çaresiz Bekliyorum (veriyi)',
       excerpt:
-        'Short notes on validation, DTO boundaries, and error responses without turning a backend into framework noise.',
+        'A practical walkthrough of search, indexing, and analytics patterns with OpenSearch on real traffic-style data.',
+      readingTime: '7 min read',
+      href: 'https://medium.com/@fatihozkurt/opensearch-101-telefonun-ba%C5%9F%C4%B1nda-%C3%A7aresiz-bekliyorum-veriyi-505b810f9175',
+    },
+    {
+      id: 'let-me-in-auth',
+      title: 'Let Me In: JWT, OAuth, Session, Cookie, Refresh Token, CSRF',
+      excerpt:
+        'A deep but practical guide to modern authentication and session management for secure backend applications.',
+      readingTime: '9 min read',
+      href: 'https://medium.com/@fatihozkurt/let-me-in-jwt-oauth-session-cookie-refresh-token-csrf-yani-neredeyse-arad%C4%B1%C4%9F%C4%B1m%C4%B1z-her-%C5%9Fey-f488a7f3e3f8',
+    },
+    {
+      id: 'cache-me-if-you-can',
+      title: 'Cache Me If You Can: Redis DB ve Caching',
+      excerpt:
+        'A concise write-up on Redis caching patterns, performance impact, and practical backend decisions.',
       readingTime: '6 min read',
-      href: 'https://medium.com/@fatihozkurt',
-    },
-    {
-      id: 'hardening-spring-auth',
-      title: 'Hardening Spring authentication flows',
-      excerpt:
-        'A cleaner backend approach to login, password reset, and brute-force protection.',
-      readingTime: '8 min read',
-      href: 'https://medium.com/@fatihozkurt',
-    },
-    {
-      id: 'observability-matters',
-      title: 'Why observability should be part of the first draft',
-      excerpt:
-        'A compact view on why logs, metrics, and operational signals matter even in smaller systems.',
-      readingTime: '5 min read',
-      href: 'https://medium.com/@fatihozkurt',
+      href: 'https://medium.com/@fatihozkurt/redis-ile-e%C4%9Flenceli-bir-yolculuk-nosqlden-cache-lemeye-f4c5ecc0124b',
     },
   ]
 }
@@ -304,17 +369,47 @@ export function getArticles(locale) {
 export function getContactLinks(locale) {
   if (locale === 'tr') {
     return [
-      { label: 'E-posta', value: 'fatih@example.com', href: 'mailto:fatih@example.com', icon: 'mail' },
-      { label: 'LinkedIn', value: 'linkedin.com/in/fatihozkurt', href: 'https://www.linkedin.com/in/fatihozkurt/', icon: 'linkedin' },
-      { label: 'GitHub', value: 'github.com/fatihozkurt', href: 'https://github.com/fatihozkurt', icon: 'github' },
-      { label: 'Medium', value: 'medium.com/@fatihozkurt', href: 'https://medium.com/@fatihozkurt', icon: 'medium' },
+      { label: 'E-posta', value: 'fatihozkurt.dev@gmail.com', href: 'mailto:fatihozkurt.dev@gmail.com', icon: 'mail' },
+      {
+        label: 'LinkedIn',
+        value: 'linkedin.com/in/fatih-özkurt-93748321a',
+        href: 'https://www.linkedin.com/in/fatih-%C3%B6zkurt-93748321a/',
+        icon: 'linkedin',
+      },
+      {
+        label: 'GitHub',
+        value: 'github.com/fatihhozkurt',
+        href: 'https://github.com/fatihhozkurt',
+        icon: 'github',
+      },
+      {
+        label: 'Medium',
+        value: 'medium.com/@fatihozkurt',
+        href: 'https://medium.com/@fatihozkurt',
+        icon: 'medium',
+      },
     ]
   }
 
   return [
-    { label: 'Mail', value: 'fatih@example.com', href: 'mailto:fatih@example.com', icon: 'mail' },
-    { label: 'LinkedIn', value: 'linkedin.com/in/fatihozkurt', href: 'https://www.linkedin.com/in/fatihozkurt/', icon: 'linkedin' },
-    { label: 'GitHub', value: 'github.com/fatihozkurt', href: 'https://github.com/fatihozkurt', icon: 'github' },
-    { label: 'Medium', value: 'medium.com/@fatihozkurt', href: 'https://medium.com/@fatihozkurt', icon: 'medium' },
+    { label: 'Mail', value: 'fatihozkurt.dev@gmail.com', href: 'mailto:fatihozkurt.dev@gmail.com', icon: 'mail' },
+    {
+      label: 'LinkedIn',
+      value: 'linkedin.com/in/fatih-özkurt-93748321a',
+      href: 'https://www.linkedin.com/in/fatih-%C3%B6zkurt-93748321a/',
+      icon: 'linkedin',
+    },
+    {
+      label: 'GitHub',
+      value: 'github.com/fatihhozkurt',
+      href: 'https://github.com/fatihhozkurt',
+      icon: 'github',
+    },
+    {
+      label: 'Medium',
+      value: 'medium.com/@fatihozkurt',
+      href: 'https://medium.com/@fatihozkurt',
+      icon: 'medium',
+    },
   ]
 }

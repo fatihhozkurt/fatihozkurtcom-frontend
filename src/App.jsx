@@ -2,7 +2,7 @@ import {
   ArrowUpRight,
   ChartNoAxesCombined,
   Cloud,
-  FileDown,
+  FileText,
   Github,
   Languages,
   Linkedin,
@@ -14,12 +14,13 @@ import {
   X,
 } from 'lucide-react'
 import { IconArticle, IconFolderQuestion } from '@tabler/icons-react'
-import { createElement, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { createElement, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   getPublicAbout,
   getPublicArticles,
   getPublicContactProfile,
   getPublicHero,
+  getPublicPageSections,
   getPublicProjectDetail,
   getPublicProjects,
   getPublicResume,
@@ -31,6 +32,7 @@ import { AuthPortal } from './components/AuthPortal'
 import { BrandIcon } from './components/BrandIcon'
 import { BackgroundEffects, InfoCard, Section, SectionHeading, TechPill } from './components/Chrome'
 import { ProjectModal } from './components/ProjectModal'
+import { ResetPasswordPortal } from './components/ResetPasswordPortal'
 import { uiText } from './locales'
 import { getArticles, getContactLinks, getNavigationItems, getProjects, techStack } from './siteContent'
 
@@ -42,6 +44,59 @@ const contactIconMap = {
 
 function safeList(value) {
   return Array.isArray(value) ? value : []
+}
+
+const LOCALIZED_PREFIX = '__I18N__'
+
+function decodeLocalizedText(value) {
+  const raw = String(value || '')
+  if (!raw.startsWith(LOCALIZED_PREFIX)) {
+    return { tr: raw, en: raw }
+  }
+  try {
+    const parsed = JSON.parse(raw.slice(LOCALIZED_PREFIX.length))
+    return {
+      tr: String(parsed?.tr || parsed?.en || ''),
+      en: String(parsed?.en || parsed?.tr || ''),
+    }
+  } catch {
+    return { tr: raw, en: raw }
+  }
+}
+
+function localizedText(value, locale) {
+  const decoded = decodeLocalizedText(value)
+  return locale === 'tr' ? (decoded.tr || decoded.en) : (decoded.en || decoded.tr)
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim())
+}
+
+function parseHeroBadgeLines(candidate) {
+  if (!candidate || typeof candidate !== 'string') {
+    return []
+  }
+  return candidate
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+}
+
+function randomIndex(length, currentIndex = -1) {
+  if (!length || length < 1) {
+    return 0
+  }
+
+  if (length === 1) {
+    return 0
+  }
+
+  let nextIndex = currentIndex
+  while (nextIndex === currentIndex) {
+    nextIndex = Math.floor(Math.random() * length)
+  }
+  return nextIndex
 }
 
 function resolveLocalizedContent(content, locale) {
@@ -67,10 +122,6 @@ function resolveLocalizedContent(content, locale) {
 
   const declaredLocale = String(content.locale || content.language || '').toLowerCase()
   if (declaredLocale && !declaredLocale.startsWith(locale)) {
-    return null
-  }
-
-  if (locale === 'tr' && !declaredLocale) {
     return null
   }
 
@@ -162,30 +213,36 @@ function normalizeProjectReadme(readmeMarkdown, locale) {
 }
 
 function mapProjectSummary(project, locale) {
+  const coverImageUrl = project.coverImageUrl || '/project-surface.svg'
+  const galleryImageUrls = safeList(project.galleryImageUrls).filter(Boolean)
   return {
     id: project.id,
     category: project.category,
-    title: project.title,
-    summary: project.summary,
+    title: localizedText(project.title, locale),
+    summary: localizedText(project.summary, locale),
     stack: safeList(project.stack),
     repository: project.repositoryUrl || '#',
     liveUrl: project.demoUrl || '#',
-    coverImageUrl: project.coverImageUrl || '/project-surface.svg',
-    readme: normalizeProjectReadme(project.readmeMarkdown, locale),
+    coverImageUrl,
+    galleryImageUrls: galleryImageUrls.length > 0 ? galleryImageUrls : [coverImageUrl],
+    readme: normalizeProjectReadme(localizedText(project.readmeMarkdown, locale), locale),
   }
 }
 
 function mapProjectDetail(project, locale) {
+  const coverImageUrl = project.coverImageUrl || '/project-surface.svg'
+  const galleryImageUrls = safeList(project.galleryImageUrls).filter(Boolean)
   return {
     id: project.id,
     category: project.category,
-    title: project.title,
-    summary: project.summary,
+    title: localizedText(project.title, locale),
+    summary: localizedText(project.summary, locale),
     stack: safeList(project.stack),
     repository: project.repositoryUrl || '#',
     liveUrl: project.demoUrl || '#',
-    coverImageUrl: project.coverImageUrl || '/project-surface.svg',
-    readme: normalizeProjectReadme(project.readmeMarkdown, locale),
+    coverImageUrl,
+    galleryImageUrls: galleryImageUrls.length > 0 ? galleryImageUrls : [coverImageUrl],
+    readme: normalizeProjectReadme(localizedText(project.readmeMarkdown, locale), locale),
   }
 }
 
@@ -239,6 +296,21 @@ function EmptyCardsPlaceholder({ icon: PlaceholderIcon, message }) {
   )
 }
 
+function CharacterSticker({ src, className = '' }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      loading="eager"
+      decoding="async"
+      className={`pointer-events-none select-none object-contain ${className}`}
+    />
+  )
+}
+
+const LIST_PAGE_SIZE = 6
+
 function PublicSite({ locale, setLocale }) {
   const text = uiText[locale]
   const navigationItems = useMemo(() => getNavigationItems(locale), [locale])
@@ -251,6 +323,7 @@ function PublicSite({ locale, setLocale }) {
   const [projects, setProjects] = useState(fallbackProjects)
   const [articles, setArticles] = useState(fallbackArticles)
   const [resumeContent, setResumeContent] = useState(null)
+  const [pageSections, setPageSections] = useState({})
   const [contactLinks, setContactLinks] = useState(fallbackContactLinks)
   const [contactForm, setContactForm] = useState({
     title: '',
@@ -266,6 +339,8 @@ function PublicSite({ locale, setLocale }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState(fallbackProjects[0]?.id ?? null)
   const [projectModalOpen, setProjectModalOpen] = useState(false)
+  const [projectPage, setProjectPage] = useState(1)
+  const [writingPage, setWritingPage] = useState(1)
   const [techPaused, setTechPaused] = useState(false)
   const [techDragging, setTechDragging] = useState(false)
   const techScrollerRef = useRef(null)
@@ -296,8 +371,46 @@ function PublicSite({ locale, setLocale }) {
     },
     [effectiveSelectedProjectId, projectDetailById, projects],
   )
+  const totalProjectPages = Math.max(1, Math.ceil(projects.length / LIST_PAGE_SIZE))
+  const totalWritingPages = Math.max(1, Math.ceil(articles.length / LIST_PAGE_SIZE))
+  const effectiveProjectPage = Math.min(projectPage, totalProjectPages)
+  const effectiveWritingPage = Math.min(writingPage, totalWritingPages)
+  const visibleProjects = useMemo(() => {
+    const start = (effectiveProjectPage - 1) * LIST_PAGE_SIZE
+    return projects.slice(start, start + LIST_PAGE_SIZE)
+  }, [effectiveProjectPage, projects])
+  const visibleArticles = useMemo(() => {
+    const start = (effectiveWritingPage - 1) * LIST_PAGE_SIZE
+    return articles.slice(start, start + LIST_PAGE_SIZE)
+  }, [articles, effectiveWritingPage])
+
   const resolvedHeroContent = useMemo(() => resolveLocalizedContent(heroContent, locale), [heroContent, locale])
   const resolvedAboutContent = useMemo(() => resolveLocalizedContent(aboutContent, locale), [aboutContent, locale])
+  const heroBadgeLines = useMemo(() => {
+    const backendLocalizedBadge = localizedText(resolvedHeroContent?.welcomeText, locale)
+    const backendLines = parseHeroBadgeLines(backendLocalizedBadge)
+    if (backendLines.length > 0) {
+      return backendLines
+    }
+    return safeList(text.hero.rotatingLines).filter(Boolean)
+  }, [locale, resolvedHeroContent?.welcomeText, text.hero.rotatingLines])
+  const [heroBadgeLineIndex, setHeroBadgeLineIndex] = useState(() => randomIndex(safeList(uiText.en.hero.rotatingLines).length))
+  const heroBadgeLine = heroBadgeLines[heroBadgeLineIndex] || localizedText(resolvedHeroContent?.welcomeText, locale) || text.hero.currentCandidate
+  const resolveSectionHeading = useCallback(
+    (sectionKey, fallback) => {
+      const dynamic = pageSections[String(sectionKey || '').toLowerCase()]
+      if (!dynamic) {
+        return fallback
+      }
+      return {
+        ...fallback,
+        eyebrow: dynamic.eyebrow || fallback.eyebrow,
+        title: dynamic.title || fallback.title,
+        description: dynamic.description || fallback.description,
+      }
+    },
+    [pageSections],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -307,6 +420,7 @@ function PublicSite({ locale, setLocale }) {
         const [
           heroResponse,
           aboutResponse,
+          pageSectionResponse,
           techResponse,
           projectsResponse,
           articlesResponse,
@@ -315,6 +429,7 @@ function PublicSite({ locale, setLocale }) {
         ] = await Promise.all([
           getPublicHero(locale),
           getPublicAbout(locale),
+          getPublicPageSections(locale),
           getPublicTechStack(locale),
           getPublicProjects(locale),
           getPublicArticles(locale),
@@ -328,6 +443,13 @@ function PublicSite({ locale, setLocale }) {
 
         setHeroContent(heroResponse)
         setAboutContent(aboutResponse)
+        const nextPageSections = {}
+        safeList(pageSectionResponse).forEach((item) => {
+          if (item?.pageKey) {
+            nextPageSections[String(item.pageKey).toLowerCase()] = item
+          }
+        })
+        setPageSections(nextPageSections)
         const mappedTech = safeList(techResponse).map((item) => ({
           name: item.name,
           category: item.category || 'backend',
@@ -339,9 +461,9 @@ function PublicSite({ locale, setLocale }) {
 
         const mappedArticles = safeList(articlesResponse).map((article) => ({
           id: article.id,
-          title: article.title,
-          excerpt: article.excerpt,
-          readingTime: article.readingTime || (locale === 'tr' ? 'Okuma' : 'Read'),
+          title: localizedText(article.title, locale),
+          excerpt: localizedText(article.excerpt, locale),
+          readingTime: localizedText(article.readingTime, locale) || (locale === 'tr' ? 'Okuma' : 'Read'),
           href: article.href,
         }))
         setArticles(mappedArticles)
@@ -352,11 +474,12 @@ function PublicSite({ locale, setLocale }) {
         const normalizedGithub = contactProfileResponse.githubUrl?.trim()
         const normalizedMedium = contactProfileResponse.mediumUrl?.trim()
 
+        const mailSubject = locale === 'tr' ? 'İş teklifimiz hakkında' : 'About our job offer'
         setContactLinks([
           {
             label: locale === 'tr' ? 'E-posta' : 'Mail',
             value: normalizedMail || '-',
-            href: normalizedMail ? `mailto:${normalizedMail}` : '#',
+            href: normalizedMail ? `mailto:${normalizedMail}?subject=${encodeURIComponent(mailSubject)}` : '#',
             icon: 'mail',
           },
           {
@@ -415,29 +538,75 @@ function PublicSite({ locale, setLocale }) {
     ).catch(() => {})
   }, [locale])
 
-  const handleObserverEntries = useEffectEvent((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting || entry.intersectionRatio < 0.35) {
-        return
-      }
+  useEffect(() => {
+    setProjectPage(1)
+  }, [locale, projects.length])
 
-      const sectionId = entry.target.getAttribute('data-section')
-      setActiveSection(sectionId)
-    })
-  })
+  useEffect(() => {
+    setWritingPage(1)
+  }, [articles.length, locale])
+
+  useEffect(() => {
+    setHeroBadgeLineIndex(randomIndex(heroBadgeLines.length))
+  }, [heroBadgeLines.length, locale])
+
+  useEffect(() => {
+    if (heroBadgeLines.length <= 1) {
+      return undefined
+    }
+
+    const intervalId = window.setInterval(() => {
+      setHeroBadgeLineIndex((current) => randomIndex(heroBadgeLines.length, current))
+    }, 10000)
+
+    return () => window.clearInterval(intervalId)
+  }, [heroBadgeLines.length])
 
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll('[data-section]'))
-    const observer = new IntersectionObserver(handleObserverEntries, {
-      threshold: [0.35, 0.55, 0.8],
-      rootMargin: '-12% 0px -20% 0px',
-    })
+    if (sections.length === 0) {
+      return undefined
+    }
 
-    sections.forEach((section) => observer.observe(section))
+    const resolveActiveSection = () => {
+      const header = document.querySelector('header')
+      const headerOffset = header ? header.getBoundingClientRect().height : 0
+      const probeLine = window.scrollY + headerOffset + 120
+      const defaultSection = sections[0]?.getAttribute('data-section') || 'home'
+      let nextSection = defaultSection
+
+      sections.forEach((section) => {
+        const sectionId = section.getAttribute('data-section')
+        if (!sectionId) {
+          return
+        }
+
+        if (probeLine >= section.offsetTop) {
+          nextSection = sectionId
+        }
+      })
+
+      const lastSectionId = sections[sections.length - 1]?.getAttribute('data-section')
+      const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
+      if (nearBottom && lastSectionId) {
+        nextSection = lastSectionId
+      }
+
+      return nextSection
+    }
+
+    const syncActiveSection = () => {
+      const nextSection = resolveActiveSection()
+      setActiveSection((current) => (current === nextSection ? current : nextSection))
+    }
+
+    syncActiveSection()
+    window.addEventListener('scroll', syncActiveSection, { passive: true })
+    window.addEventListener('resize', syncActiveSection)
 
     return () => {
-      sections.forEach((section) => observer.unobserve(section))
-      observer.disconnect()
+      window.removeEventListener('scroll', syncActiveSection)
+      window.removeEventListener('resize', syncActiveSection)
     }
   }, [])
 
@@ -470,18 +639,19 @@ function PublicSite({ locale, setLocale }) {
         })
       },
       {
-        threshold: 0.18,
-        rootMargin: '0px 0px -10% 0px',
+        threshold: 0,
+        rootMargin: '0px 0px 48% 0px',
       },
     )
 
     revealNodes.forEach((node) => observer.observe(node))
 
     return () => observer.disconnect()
-  }, [locale, projects, articles, contactLinks, techItems, heroContent, aboutContent, resumeContent])
+  }, [locale, projects, articles, contactLinks, techItems, heroContent, aboutContent, resumeContent, projectPage, writingPage])
 
-  const scrollToSection = (sectionId) => {
+  const scrollToSection = useCallback((sectionId) => {
     setMobileMenuOpen(false)
+    setActiveSection(sectionId)
 
     const header = document.querySelector('header')
     const target = document.getElementById(sectionId)
@@ -491,13 +661,27 @@ function PublicSite({ locale, setLocale }) {
     }
 
     const headerOffset = header ? header.getBoundingClientRect().height : 0
-    const targetTop = target.getBoundingClientRect().top + window.scrollY - headerOffset + 8
+    const sectionTopOffset = window.innerWidth >= 1024 ? 18 : window.innerWidth >= 768 ? 16 : 12
+    const targetTop = target.getBoundingClientRect().top + window.scrollY - headerOffset - sectionTopOffset
 
     window.scrollTo({
       top: Math.max(targetTop, 0),
       behavior: 'smooth',
     })
-  }
+  }, [])
+
+  useEffect(() => {
+    const hashTarget = (window.location.hash || '').replace('#', '').trim()
+    if (!hashTarget) {
+      return undefined
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      scrollToSection(hashTarget)
+    }, 180)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [scrollToSection])
 
   const openProject = async (projectId) => {
     setSelectedProjectId(projectId)
@@ -721,6 +905,13 @@ function PublicSite({ locale, setLocale }) {
       })
       return
     }
+    if (!isValidEmail(contactForm.email)) {
+      setContactState({
+        type: 'error',
+        message: locale === 'tr' ? 'Geçerli bir e-posta adresi gir.' : 'Enter a valid email address.',
+      })
+      return
+    }
 
     try {
       await postPublicContactMessage(
@@ -760,9 +951,11 @@ function PublicSite({ locale, setLocale }) {
       <header className="intro-fade sticky top-0 z-50 border-b border-white/10 bg-[rgba(8,10,18,0.7)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-8">
           <SectionLink href="#home" onNavigate={() => scrollToSection('home')} className="flex items-center gap-3 text-left">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-400/30 bg-white/5 text-sm font-semibold tracking-[0.3em] text-sky-200">FO</span>
+            <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-sky-400/30 bg-white/5 p-[2px]">
+              <img src="/brand-fo-icon.png" alt="" aria-hidden="true" className="h-full w-full rounded-xl object-contain" />
+            </span>
             <span>
-              <span className="block text-sm font-medium text-white">Fatih Ozkurt</span>
+              <span className="block text-sm font-medium text-white">{resolvedHeroContent?.fullName || text.hero.name}</span>
               <span className="block text-xs uppercase tracking-[0.3em] text-slate-400">{text.brandSubtitle}</span>
             </span>
           </SectionLink>
@@ -812,7 +1005,12 @@ function PublicSite({ locale, setLocale }) {
                   key={item.id}
                   href={`#${item.id}`}
                   onNavigate={() => scrollToSection(item.id)}
-                  className="rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-left text-sm text-slate-200"
+                  aria-current={activeSection === item.id ? 'page' : undefined}
+                  className={`rounded-2xl border px-4 py-3 text-left text-sm ${
+                    activeSection === item.id
+                      ? 'border-sky-300/25 bg-sky-400/15 text-white'
+                      : 'border-white/8 bg-white/4 text-slate-200'
+                  }`}
                 >
                   {item.label}
                 </SectionLink>
@@ -832,13 +1030,16 @@ function PublicSite({ locale, setLocale }) {
                 style={{ '--reveal-delay': '120ms' }}
               >
                 <Sparkles size={14} />
-                {resolvedHeroContent?.welcomeText || text.hero.currentCandidate}
+                <span key={`${locale}-${heroBadgeLineIndex}-${heroBadgeLine}`} className="hero-badge-line">
+                  {heroBadgeLine}
+                </span>
               </div>
               <div
                 data-reveal
-                className="reveal mt-8 rounded-[2.5rem] border border-white/8 bg-white/[0.025] px-6 py-10 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] md:px-12 md:py-14"
+                className="reveal relative mt-8 rounded-[2.5rem] border border-white/8 bg-white/[0.025] px-6 py-10 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] md:px-12 md:py-14"
                 style={{ '--reveal-delay': '220ms' }}
               >
+                <CharacterSticker src="/avatars/home-laptop.png" className="character-ghost character-sticker character-home" />
                 <h1 className="mx-auto max-w-5xl font-display text-6xl font-semibold leading-[0.9] tracking-tight text-white md:text-[7.5rem] md:leading-[0.88]">
                   {resolvedHeroContent?.fullName || text.hero.name}
                 </h1>
@@ -868,7 +1069,7 @@ function PublicSite({ locale, setLocale }) {
         </Section>
 
         <Section id="about" className="pt-20 md:pt-28">
-          <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
+          <div className="relative z-10 grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={resolvedAboutContent?.eyebrow || text.sections.about.eyebrow}
@@ -876,29 +1077,29 @@ function PublicSite({ locale, setLocale }) {
                 description={resolvedAboutContent?.description || text.sections.about.description}
               />
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div data-reveal className="reveal" style={{ '--reveal-delay': '40ms' }}>
+            <div className="relative grid gap-4 md:grid-cols-2 md:[grid-auto-rows:1fr]">
+              <div data-reveal className="reveal h-full" style={{ '--reveal-delay': '40ms' }}>
                 <InfoCard
                   icon={ShieldCheck}
                   title={text.sections.about.cards.security.title}
                   description={text.sections.about.cards.security.description}
                 />
               </div>
-              <div data-reveal className="reveal" style={{ '--reveal-delay': '100ms' }}>
+              <div data-reveal className="reveal h-full" style={{ '--reveal-delay': '100ms' }}>
                 <InfoCard
                   icon={ChartNoAxesCombined}
                   title={text.sections.about.cards.observability.title}
                   description={text.sections.about.cards.observability.description}
                 />
               </div>
-              <div data-reveal className="reveal" style={{ '--reveal-delay': '160ms' }}>
+              <div data-reveal className="reveal h-full" style={{ '--reveal-delay': '160ms' }}>
                 <InfoCard
                   icon={ServerCog}
                   title={text.sections.about.cards.service.title}
                   description={text.sections.about.cards.service.description}
                 />
               </div>
-              <div data-reveal className="reveal" style={{ '--reveal-delay': '220ms' }}>
+              <div data-reveal className="reveal h-full" style={{ '--reveal-delay': '220ms' }}>
                 <InfoCard
                   icon={Cloud}
                   title={text.sections.about.cards.delivery.title}
@@ -907,7 +1108,8 @@ function PublicSite({ locale, setLocale }) {
               </div>
             </div>
           </div>
-          <div data-reveal className="reveal mt-12 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] py-5" style={{ '--reveal-delay': '120ms' }}>
+          <div data-reveal className="reveal relative mt-12 rounded-[2rem] border border-white/10 bg-white/[0.04] py-5" style={{ '--reveal-delay': '120ms' }}>
+            <CharacterSticker src="/avatars/about-knight.png" className="character-ghost-faint character-sticker character-about" />
             <div
               ref={techScrollerRef}
               className={`marquee-shell hide-scrollbar overflow-x-auto px-4 select-none touch-pan-y ${techPaused ? 'is-paused' : ''} ${techDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
@@ -928,23 +1130,35 @@ function PublicSite({ locale, setLocale }) {
         </Section>
 
         <Section id="projects" className="pt-20 md:pt-28">
-          <div className="space-y-10">
+          <div className="relative z-10 space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
-                eyebrow={text.sections.projects.eyebrow}
-                title={text.sections.projects.title}
-                description={text.sections.projects.description}
+                eyebrow={resolveSectionHeading('projects', text.sections.projects).eyebrow}
+                title={resolveSectionHeading('projects', text.sections.projects).title}
+                description={resolveSectionHeading('projects', text.sections.projects).description}
               />
             </div>
             {projects.length === 0 ? (
-              <div data-reveal className="reveal" style={{ '--reveal-delay': '60ms' }}>
+              <div data-reveal className="reveal relative" style={{ '--reveal-delay': '60ms' }}>
                 <EmptyCardsPlaceholder icon={IconFolderQuestion} message={text.sections.projects.emptyPlaceholder} />
               </div>
             ) : (
-              <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {projects.map((project, index) => (
-                  <div key={project.id} data-reveal className="reveal" style={{ '--reveal-delay': `${60 + index * 90}ms` }}>
-                    <article className="surface-card group relative flex min-h-full overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-4 transition hover:-translate-y-1 hover:border-sky-300/25">
+              <>
+              <div className="projects-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 md:grid-cols-2 xl:grid-cols-3">
+                {visibleProjects.map((project, index) => (
+                  <div key={project.id} data-reveal className={`projects-rail-item reveal ${index === 0 ? 'relative' : ''}`} style={{ '--reveal-delay': `${60 + index * 90}ms` }}>
+                    <article
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => openProject(project.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          openProject(project.id)
+                        }
+                      }}
+                      className="surface-card relative flex min-h-full cursor-pointer overflow-visible rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-4 transition hover:-translate-y-1 hover:border-sky-300/25"
+                    >
                       <div className="absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top_left,_rgba(253,186,116,0.16),transparent_58%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),transparent_58%)]" />
                       <div className="relative flex h-full flex-1 flex-col">
                         <div className="flex items-start justify-between gap-4">
@@ -957,8 +1171,15 @@ function PublicSite({ locale, setLocale }) {
                           <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">0{index + 1}</span>
                         </div>
                         <div className="mt-4 rounded-[1.25rem] border border-white/8 bg-slate-950/55 p-3.5">
-                          <div className="mb-3 overflow-hidden rounded-[1rem] border border-white/10 bg-slate-950/60">
-                            <img src={project.coverImageUrl || '/project-surface.svg'} alt="" className="h-28 w-full object-cover object-left" />
+                          <div className="mb-3 aspect-[16/9] overflow-hidden rounded-[1rem] border border-white/10 bg-slate-950/70">
+                            <img
+                              src={project.coverImageUrl || '/project-surface.svg'}
+                              alt=""
+                              loading="eager"
+                              decoding="async"
+                              fetchPriority={index < 4 ? 'high' : 'auto'}
+                              className="h-full w-full object-contain object-center"
+                            />
                           </div>
                           <p
                             className="text-sm leading-6 text-slate-300"
@@ -979,17 +1200,47 @@ function PublicSite({ locale, setLocale }) {
                             </span>
                           ))}
                           {project.stack.length > 4 ? (
-                            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400">
+                            <button
+                              type="button"
+                              onClick={(event) => event.stopPropagation()}
+                              className="group/stack relative rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400"
+                              aria-label={locale === 'tr' ? 'Kalan teknolojileri göster' : 'Show remaining technologies'}
+                            >
                               +{project.stack.length - 4}
-                            </span>
+                              <span className="pointer-events-none absolute bottom-[calc(100%+0.55rem)] left-1/2 z-50 w-56 -translate-x-1/2 translate-y-1 rounded-xl border border-white/12 bg-slate-950/96 px-3 py-2 text-left text-[11px] leading-5 text-slate-200 opacity-0 shadow-[0_14px_30px_rgba(2,6,23,0.45)] transition duration-200 group-hover/stack:translate-y-0 group-hover/stack:opacity-100 group-focus-visible/stack:translate-y-0 group-focus-visible/stack:opacity-100">
+                                <span className="mb-1 block text-[10px] uppercase tracking-[0.24em] text-slate-400">
+                                  {locale === 'tr' ? 'Kalan teknolojiler' : 'Remaining technologies'}
+                                </span>
+                                <span className="flex flex-col">
+                                  {project.stack.slice(4).map((stackItem, stackIndex) => (
+                                    <span key={`${project.id}-${stackItem}-extra-${stackIndex}`} className="block">
+                                      {stackItem}
+                                    </span>
+                                  ))}
+                                </span>
+                              </span>
+                            </button>
                           ) : null}
                         </div>
                         <div className="mt-auto flex items-center gap-2 pt-5">
-                          <a href={project.repository} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3.5 py-2 text-sm text-slate-200 transition hover:bg-white/10">
+                          <a
+                            href={project.repository}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(event) => event.stopPropagation()}
+                            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3.5 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+                          >
                             <Github size={16} />
                             {text.sections.projects.github}
                           </a>
-                          <button type="button" onClick={() => openProject(project.id)} className="button-secondary inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              openProject(project.id)
+                            }}
+                            className="button-secondary inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm"
+                          >
                             <ArrowUpRight size={16} />
                             {text.sections.projects.openDetails}
                           </button>
@@ -999,31 +1250,64 @@ function PublicSite({ locale, setLocale }) {
                   </div>
                 ))}
               </div>
+              {totalProjectPages > 1 ? (
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setProjectPage((page) => Math.max(1, page - 1))}
+                    disabled={effectiveProjectPage === 1}
+                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
+                  >
+                    {locale === 'tr' ? 'Önceki' : 'Prev'}
+                  </button>
+                  {Array.from({ length: totalProjectPages }, (_, idx) => idx + 1).map((page) => (
+                    <button
+                      key={`project-page-${page}`}
+                      type="button"
+                      onClick={() => setProjectPage(page)}
+                      aria-current={effectiveProjectPage === page ? 'page' : undefined}
+                      className={`h-8 min-w-8 rounded-full px-2 text-xs font-semibold ${effectiveProjectPage === page ? 'bg-sky-400/20 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.35)]' : 'border border-white/10 bg-white/6 text-slate-300 hover:text-white'}`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setProjectPage((page) => Math.min(totalProjectPages, page + 1))}
+                    disabled={effectiveProjectPage === totalProjectPages}
+                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
+                  >
+                    {locale === 'tr' ? 'Sonraki' : 'Next'}
+                  </button>
+                </div>
+              ) : null}
+              </>
             )}
           </div>
         </Section>
 
         <Section id="writings" className="pt-20 md:pt-28">
-          <div className="space-y-10">
+          <div className="relative z-10 space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
-                eyebrow={text.sections.writings.eyebrow}
-                title={text.sections.writings.title}
-                description={text.sections.writings.description}
+                eyebrow={resolveSectionHeading('writings', text.sections.writings).eyebrow}
+                title={resolveSectionHeading('writings', text.sections.writings).title}
+                description={resolveSectionHeading('writings', text.sections.writings).description}
               />
             </div>
             {articles.length === 0 ? (
-              <div data-reveal className="reveal" style={{ '--reveal-delay': '50ms' }}>
+              <div data-reveal className="reveal relative" style={{ '--reveal-delay': '50ms' }}>
                 <EmptyCardsPlaceholder icon={IconArticle} message={text.sections.writings.emptyPlaceholder} />
               </div>
             ) : (
-              <div className="grid gap-6 lg:grid-cols-3">
-                {articles.map((article, index) => (
-                  <div key={article.id} data-reveal className="reveal" style={{ '--reveal-delay': `${50 + index * 90}ms` }}>
+              <>
+              <div className="writings-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 lg:grid-cols-3">
+                {visibleArticles.map((article, index) => (
+                  <div key={article.id} data-reveal className={`writings-rail-item reveal ${index === 0 ? 'relative' : ''}`} style={{ '--reveal-delay': `${50 + index * 90}ms` }}>
                     <a href={article.href} target="_blank" rel="noreferrer" className={`surface-card group block rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 transition hover:-translate-y-1 hover:border-orange-300/25 ${index > 0 ? 'surface-card-delayed' : ''}`}>
                       <div className="inline-flex rounded-full border border-orange-300/15 bg-orange-300/10 px-3 py-1 text-xs uppercase tracking-[0.28em] text-orange-100">{article.readingTime}</div>
                       <h3 className="mt-6 text-2xl font-semibold text-white">{article.title}</h3>
-                      <p className="mt-4 text-sm leading-7 text-slate-300">{article.excerpt}</p>
+                      <p className="mt-4 break-words text-sm leading-7 text-slate-300 [overflow-wrap:anywhere]">{article.excerpt}</p>
                       <div className="mt-8 inline-flex items-center gap-2 text-sm text-sky-200">
                         {text.sections.writings.readOnMedium}
                         <ArrowUpRight size={16} />
@@ -1032,6 +1316,38 @@ function PublicSite({ locale, setLocale }) {
                   </div>
                 ))}
               </div>
+              {totalWritingPages > 1 ? (
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setWritingPage((page) => Math.max(1, page - 1))}
+                    disabled={effectiveWritingPage === 1}
+                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
+                  >
+                    {locale === 'tr' ? 'Önceki' : 'Prev'}
+                  </button>
+                  {Array.from({ length: totalWritingPages }, (_, idx) => idx + 1).map((page) => (
+                    <button
+                      key={`writing-page-${page}`}
+                      type="button"
+                      onClick={() => setWritingPage(page)}
+                      aria-current={effectiveWritingPage === page ? 'page' : undefined}
+                      className={`h-8 min-w-8 rounded-full px-2 text-xs font-semibold ${effectiveWritingPage === page ? 'bg-sky-400/20 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.35)]' : 'border border-white/10 bg-white/6 text-slate-300 hover:text-white'}`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setWritingPage((page) => Math.min(totalWritingPages, page + 1))}
+                    disabled={effectiveWritingPage === totalWritingPages}
+                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
+                  >
+                    {locale === 'tr' ? 'Sonraki' : 'Next'}
+                  </button>
+                </div>
+              ) : null}
+              </>
             )}
           </div>
         </Section>
@@ -1040,13 +1356,14 @@ function PublicSite({ locale, setLocale }) {
           <div className="space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
-                eyebrow={text.sections.resume.eyebrow}
-                title={text.sections.resume.title}
-                description={text.sections.resume.description}
+                eyebrow={resolveSectionHeading('resume', text.sections.resume).eyebrow}
+                title={resolveSectionHeading('resume', text.sections.resume).title}
+                description={resolveSectionHeading('resume', text.sections.resume).description}
               />
             </div>
             <div data-reveal className="reveal glass-card rounded-[2rem] p-5 md:p-8" style={{ '--reveal-delay': '110ms' }}>
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-white/10 bg-slate-950/45 px-5 py-4">
+              <div className="relative mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-white/10 bg-slate-950/45 px-5 py-4">
+                <CharacterSticker src="/avatars/resume-coffee.png" className="character-ghost character-sticker character-resume" />
                 <div>
                   <p className="text-xs uppercase tracking-[0.32em] text-slate-500">{text.sections.resume.currentCv}</p>
                   <p className="mt-2 text-lg font-semibold text-white">{resumeContent?.fileName || 'fatih-ozkurt-cv.pdf'}</p>
@@ -1057,15 +1374,15 @@ function PublicSite({ locale, setLocale }) {
                   rel="noreferrer"
                   className="button-primary inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold"
                 >
-                  <FileDown size={16} />
+                  <FileText size={16} />
                   {text.sections.resume.downloadCv}
                 </a>
               </div>
-              <div className="resume-sheet rounded-[1.75rem] border border-white/10 bg-[#f5f5f1] p-6 text-slate-950 md:p-10">
+              <div className="resume-sheet relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#f5f5f1] p-6 text-slate-950 md:p-10">
                 <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr]">
                   <div>
                     <p className="text-sm uppercase tracking-[0.35em] text-slate-500">{text.sections.resume.preview}</p>
-                    <h3 className="mt-4 text-4xl font-semibold">Fatih Ozkurt</h3>
+                    <h3 className="mt-4 text-4xl font-semibold">{text.hero.name}</h3>
                     <p className="mt-3 text-lg text-slate-700">{resolvedHeroContent?.title || text.hero.title}</p>
                     <p className="mt-8 max-w-xl text-sm leading-7 text-slate-700">{text.sections.resume.previewDescription}</p>
                   </div>
@@ -1084,13 +1401,13 @@ function PublicSite({ locale, setLocale }) {
         </Section>
 
         <Section id="contact" className="min-h-0 pb-24 pt-20 md:pt-28" divider={false}>
-          <div className="grid items-start gap-10 xl:grid-cols-[0.78fr_1.02fr] xl:grid-rows-[auto_1fr] xl:gap-x-12 xl:gap-y-8">
+          <div className="relative z-10 grid items-start gap-10 xl:grid-cols-[0.78fr_1.02fr] xl:grid-rows-[auto_1fr] xl:gap-x-12 xl:gap-y-8">
             <div data-reveal className="reveal xl:col-span-2 xl:row-start-1">
               <SectionHeading
                 className="max-w-5xl"
-                eyebrow={text.sections.contact.eyebrow}
-                title={text.sections.contact.title}
-                description={text.sections.contact.description}
+                eyebrow={resolveSectionHeading('contact', text.sections.contact).eyebrow}
+                title={resolveSectionHeading('contact', text.sections.contact).title}
+                description={resolveSectionHeading('contact', text.sections.contact).description}
               />
             </div>
             <div className="grid gap-4 xl:col-start-1 xl:row-start-2">
@@ -1120,7 +1437,8 @@ function PublicSite({ locale, setLocale }) {
                 )
               })}
             </div>
-            <div data-reveal className="reveal glass-card h-fit place-self-start self-start rounded-[2rem] p-6 md:p-8 xl:col-start-2 xl:row-start-2" style={{ '--reveal-delay': '120ms' }}>
+            <div data-reveal className="reveal relative glass-card h-fit place-self-start self-start rounded-[2rem] p-6 md:p-8 xl:col-start-2 xl:row-start-2" style={{ '--reveal-delay': '120ms' }}>
+              <CharacterSticker src="/avatars/contact-wave.png" className="character-ghost-faint character-sticker character-contact" />
               <form onSubmit={handleContactSubmit}>
                 <div className="grid gap-5 md:grid-cols-2">
                   <label className="space-y-2">
@@ -1185,7 +1503,7 @@ function PublicSite({ locale, setLocale }) {
           text={{
             projectVisual: text.sections.projects.visualPlaceholder,
             github: text.sections.projects.github,
-            liveSurface: locale === 'tr' ? 'Canlı yüzey' : 'Live surface',
+            liveAddress: locale === 'tr' ? 'Canlı adres' : 'Live address',
             readmeView: locale === 'tr' ? 'README görünümü' : 'README view',
             closeProjectDetails: text.accessibility.closeProjectDetails,
           }}
@@ -1212,12 +1530,18 @@ function App() {
 
   useEffect(() => {
     const meta = uiText[locale].meta
-    const isAuthPage = pathname === '/auth'
+    const isAuthPage = pathname === '/auth' || pathname === '/auth/reset-password'
     const title = isAuthPage ? `${meta.title} | Admin` : meta.title
     const description = isAuthPage
-      ? 'Restricted admin login surface for Fatih Ozkurt portfolio operations.'
+      ? 'Restricted admin login surface for Fatih Özkurt portfolio operations.'
       : meta.description
-    const canonicalUrl = isAuthPage ? 'https://fatihozkurt.com/auth' : 'https://fatihozkurt.com/'
+    const canonicalUrl = pathname === '/auth/reset-password'
+      ? 'https://fatihozkurt.com/auth/reset-password'
+      : (isAuthPage ? 'https://fatihozkurt.com/auth' : 'https://fatihozkurt.com/')
+    const ogImage = 'https://fatihozkurt.com/og-image.svg'
+    const keywords = locale === 'tr'
+      ? 'Fatih Özkurt, Fatih Ozkurt, fatihozkurt, java backend developer, spring boot, backend engineer, istanbul yazılım'
+      : 'Fatih Ozkurt, Fatih Özkurt, fatihozkurt, java backend developer, spring boot, backend engineer, software architect'
 
     document.title = title
 
@@ -1240,9 +1564,17 @@ function App() {
       identity: { name: 'robots' },
       content: isAuthPage ? 'noindex,nofollow,noarchive,nosnippet' : 'index,follow',
     })
+    upsertMeta('meta[name="keywords"]', {
+      identity: { name: 'keywords' },
+      content: keywords,
+    })
     upsertMeta('meta[property="og:title"]', {
       identity: { property: 'og:title' },
       content: title,
+    })
+    upsertMeta('meta[property="og:type"]', {
+      identity: { property: 'og:type' },
+      content: isAuthPage ? 'website' : 'profile',
     })
     upsertMeta('meta[property="og:description"]', {
       identity: { property: 'og:description' },
@@ -1256,6 +1588,18 @@ function App() {
       identity: { property: 'og:locale' },
       content: locale === 'tr' ? 'tr_TR' : 'en_US',
     })
+    upsertMeta('meta[property="og:image"]', {
+      identity: { property: 'og:image' },
+      content: ogImage,
+    })
+    upsertMeta('meta[property="og:image:alt"]', {
+      identity: { property: 'og:image:alt' },
+      content: 'Fatih Özkurt backend portfolio preview',
+    })
+    upsertMeta('meta[name="twitter:card"]', {
+      identity: { name: 'twitter:card' },
+      content: 'summary_large_image',
+    })
     upsertMeta('meta[name="twitter:title"]', {
       identity: { name: 'twitter:title' },
       content: title,
@@ -1263,6 +1607,10 @@ function App() {
     upsertMeta('meta[name="twitter:description"]', {
       identity: { name: 'twitter:description' },
       content: description,
+    })
+    upsertMeta('meta[name="twitter:image"]', {
+      identity: { name: 'twitter:image' },
+      content: ogImage,
     })
     let canonicalNode = document.head.querySelector('link[rel="canonical"]')
     if (!canonicalNode) {
@@ -1283,7 +1631,41 @@ function App() {
       }
       altNode.setAttribute('href', 'https://fatihozkurt.com/')
     })
+
+    if (!isAuthPage) {
+      const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: 'Fatih Özkurt',
+        alternateName: 'Fatih Ozkurt',
+        jobTitle: 'Java Backend Developer',
+        url: 'https://fatihozkurt.com/',
+        image: 'https://fatihozkurt.com/og-image.svg',
+        sameAs: [
+          'https://github.com/fatihhozkurt',
+          'https://www.linkedin.com/in/fatih-%C3%B6zkurt-93748321a/',
+          'https://medium.com/@fatihozkurt',
+        ],
+      }
+      let schemaNode = document.head.querySelector('script[data-schema="person"]')
+      if (!schemaNode) {
+        schemaNode = document.createElement('script')
+        schemaNode.setAttribute('type', 'application/ld+json')
+        schemaNode.setAttribute('data-schema', 'person')
+        document.head.appendChild(schemaNode)
+      }
+      schemaNode.textContent = JSON.stringify(jsonLd)
+    } else {
+      const schemaNode = document.head.querySelector('script[data-schema="person"]')
+      if (schemaNode) {
+        schemaNode.remove()
+      }
+    }
   }, [locale, pathname])
+
+  if (pathname === '/auth/reset-password') {
+    return <ResetPasswordPortal locale={locale} setLocale={setLocale} langLabels={uiText[locale].lang} />
+  }
 
   if (pathname === '/auth') {
     return <AuthPortal locale={locale} setLocale={setLocale} text={uiText[locale].auth} langLabels={uiText[locale].lang} />

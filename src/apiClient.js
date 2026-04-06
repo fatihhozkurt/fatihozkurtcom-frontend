@@ -27,9 +27,35 @@ async function request(path, options = {}) {
   const payload = await readResponse(response)
 
   if (!response.ok) {
-    const fallbackMessage = `Request failed with status ${response.status}`
-    const message = payload?.message ?? fallbackMessage
-    throw new Error(message)
+    const fieldErrors = Array.isArray(payload?.fieldErrors) ? payload.fieldErrors : []
+    const fieldDetails = fieldErrors
+      .map((item) => {
+        const field = String(item?.field || '').trim()
+        const message = String(item?.message || '').trim()
+        if (!field && !message) {
+          return ''
+        }
+        if (field && message) {
+          return `${field}: ${message}`
+        }
+        return field || message
+      })
+      .filter(Boolean)
+    const fallbackMessage =
+      response.status === 413
+        ? 'Uploaded file is too large. Please choose a smaller file.'
+        : `Request failed with status ${response.status}`
+    const baseMessage = payload?.message ?? fallbackMessage
+    const message =
+      fieldDetails.length > 0
+        ? `${baseMessage} ${fieldDetails.join(' | ')}`
+        : baseMessage
+    const error = new Error(message)
+    error.status = response.status
+    error.code = payload?.code ?? null
+    error.path = payload?.path ?? null
+    error.fieldErrors = fieldErrors
+    throw error
   }
 
   return payload
@@ -43,6 +69,12 @@ export async function getPublicHero(locale) {
 
 export async function getPublicAbout(locale) {
   return request('/api/v1/public/about', {
+    headers: localeHeaders(locale),
+  })
+}
+
+export async function getPublicPageSections(locale) {
+  return request('/api/v1/public/page-sections', {
     headers: localeHeaders(locale),
   })
 }
@@ -117,13 +149,60 @@ export async function login(payload, locale) {
   })
 }
 
-export async function forgotPassword(payload, locale) {
+export async function refreshAccessToken(locale) {
+  return request('/api/v1/auth/refresh', {
+    method: 'POST',
+    credentials: 'include',
+    headers: localeHeaders(locale),
+  })
+}
+
+export async function forgotPassword(locale) {
+  const csrf = await getCsrf(locale)
+  const headers = {
+    ...localeHeaders(locale),
+  }
+  if (csrf?.headerName && csrf?.token) {
+    headers[csrf.headerName] = csrf.token
+  }
   return request('/api/v1/auth/forgot-password', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...localeHeaders(locale),
-    },
+    credentials: 'include',
+    headers,
+  })
+}
+
+export async function resetPassword(payload, locale) {
+  const csrf = await getCsrf(locale)
+  const headers = {
+    'Content-Type': 'application/json',
+    ...localeHeaders(locale),
+  }
+  if (csrf?.headerName && csrf?.token) {
+    headers[csrf.headerName] = csrf.token
+  }
+  return request('/api/v1/auth/reset-password', {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function updateCredentials(payload, accessToken, locale) {
+  const csrf = await getCsrf(locale)
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+    ...localeHeaders(locale),
+  }
+  if (csrf?.headerName && csrf?.token) {
+    headers[csrf.headerName] = csrf.token
+  }
+  return request('/api/v1/auth/credentials', {
+    method: 'POST',
+    credentials: 'include',
+    headers,
     body: JSON.stringify(payload),
   })
 }
@@ -219,6 +298,12 @@ export async function getAdminAbout(accessToken, locale) {
   })
 }
 
+export async function getAdminPageSections(accessToken, locale) {
+  return request('/api/v1/admin/content/page-sections', {
+    headers: adminAuthHeaders(accessToken, locale),
+  })
+}
+
 export async function getAdminTechStack(accessToken, locale) {
   return request('/api/v1/admin/tech-stack', {
     headers: adminAuthHeaders(accessToken, locale),
@@ -281,6 +366,10 @@ export async function updateAdminAbout(accessToken, payload, locale) {
   return adminMutation('/api/v1/admin/content/about', 'PUT', accessToken, payload, locale)
 }
 
+export async function updateAdminPageSection(accessToken, pageKey, payload, locale) {
+  return adminMutation(`/api/v1/admin/content/page-sections/${pageKey}`, 'PUT', accessToken, payload, locale)
+}
+
 export async function updateAdminContactProfile(accessToken, payload, locale) {
   return adminMutation('/api/v1/admin/contact-profile', 'PUT', accessToken, payload, locale)
 }
@@ -323,4 +412,45 @@ export async function deleteAdminArticle(accessToken, id, locale) {
 
 export async function replaceAdminResume(accessToken, payload, locale) {
   return adminMutation('/api/v1/admin/resume/replace', 'POST', accessToken, payload, locale)
+}
+
+export async function uploadAdminResume(accessToken, file, locale) {
+  const csrf = await getCsrf(locale)
+  const headers = {
+    ...adminAuthHeaders(accessToken, locale),
+  }
+  if (csrf?.headerName && csrf?.token) {
+    headers[csrf.headerName] = csrf.token
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  return request('/api/v1/admin/resume/upload', {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: formData,
+  })
+}
+
+export async function uploadAdminProjectAsset(accessToken, file, locale, folder = 'admin-upload') {
+  const csrf = await getCsrf(locale)
+  const headers = {
+    ...adminAuthHeaders(accessToken, locale),
+  }
+  if (csrf?.headerName && csrf?.token) {
+    headers[csrf.headerName] = csrf.token
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('folder', folder)
+
+  return request('/api/v1/admin/assets/upload', {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: formData,
+  })
 }

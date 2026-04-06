@@ -23,7 +23,7 @@
   <g transform="translate(96 116)">
     <rect x="0" y="0" width="84" height="84" rx="24" fill="none" stroke="#7dd3fc" stroke-opacity="0.45" />
     <text x="42" y="53" text-anchor="middle" font-family="Space Grotesk, Arial, sans-serif" font-size="28" fill="#e2e8f0" letter-spacing="6">FO</text>
-    <text x="112" y="34" font-family="Manrope, Arial, sans-serif" font-size="18" fill="#ffffff">Fatih Ozkurt</text>
+    <text x="112" y="34" font-family="Manrope, Arial, sans-serif" font-size="18" fill="#ffffff">Fatih Özkurt</text>
     <text x="112" y="64" font-family="Manrope, Arial, sans-serif" font-size="18" fill="#94a3b8" letter-spacing="7">BACKEND PORTFOLIO</text>
   </g>
   <g transform="translate(96 210)">
@@ -31,7 +31,7 @@
     <text x="28" y="31" font-family="Manrope, Arial, sans-serif" font-size="17" fill="#ffedd5" letter-spacing="6">JAVA BACKEND DEVELOPER</text>
   </g>
   <g transform="translate(96 290)">
-    <text x="0" y="0" font-family="Space Grotesk, Arial, sans-serif" font-size="96" font-weight="700" fill="#f8fafc">Fatih Ozkurt</text>
+    <text x="0" y="0" font-family="Space Grotesk, Arial, sans-serif" font-size="96" font-weight="700" fill="#f8fafc">Fatih Özkurt</text>
     <text x="0" y="72" font-family="Manrope, Arial, sans-serif" font-size="34" fill="#bae6fd">Secure APIs, observability, and disciplined service design.</text>
     <text x="0" y="138" font-family="Manrope, Arial, sans-serif" font-size="26" fill="#cbd5e1">Projects, writings, resume preview, and a polished public product surface.</text>
   </g>
