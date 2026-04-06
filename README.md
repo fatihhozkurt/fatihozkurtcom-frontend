@@ -176,6 +176,7 @@ The Docker setup uses:
 - multi-stage Docker build
 - `nginx` for static file serving
 - SPA fallback routing so `/auth` works correctly in the browser
+- host-level reverse proxy should handle `/api/*` and forward to backend
 
 ---
 
