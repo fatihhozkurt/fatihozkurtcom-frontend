@@ -14,8 +14,8 @@ const copyByLocale = {
     invalidToken: 'Reset token is missing or invalid. Open the latest link from your inbox.',
     mismatch: 'Passwords do not match.',
     policy: 'Minimum 8 chars with uppercase, lowercase, number, and symbol.',
-    success: 'Password updated. You can now sign in from /auth.',
-    back: 'Go to /auth',
+    success: 'Password updated. You can now sign in from the admin login page.',
+    back: 'Go to admin login',
     show: 'Show password',
     hide: 'Hide password',
   },
@@ -28,8 +28,8 @@ const copyByLocale = {
     invalidToken: 'Reset token bulunamadı veya geçersiz. Gelen kutusundaki son bağlantıyı aç.',
     mismatch: 'Şifreler eşleşmiyor.',
     policy: 'En az 8 karakter: büyük, küçük, sayı ve sembol içermeli.',
-    success: 'Şifre güncellendi. Artık /auth üzerinden giriş yapabilirsin.',
-    back: '/auth sayfasına git',
+    success: 'Şifre güncellendi. Artık admin giriş sayfasından giriş yapabilirsin.',
+    back: 'Admin giriş sayfasına git',
     show: 'Şifreyi göster',
     hide: 'Şifreyi gizle',
   },
@@ -48,7 +48,7 @@ function resolveResetToken() {
   return (query.get('token') || '').trim()
 }
 
-export function ResetPasswordPortal({ locale = 'en', setLocale, langLabels }) {
+export function ResetPasswordPortal({ locale = 'en', setLocale, langLabels, adminPath = '/auth' }) {
   const copy = copyByLocale[locale] ?? copyByLocale.en
   const token = useMemo(() => resolveResetToken(), [])
   const [newPassword, setNewPassword] = useState('')
@@ -177,7 +177,7 @@ export function ResetPasswordPortal({ locale = 'en', setLocale, langLabels }) {
             <button type="submit" disabled={!canSubmit} className="button-primary w-full rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-55">
               {busy ? '...' : copy.submit}
             </button>
-            <a href="/auth" className="block text-center text-sm text-slate-400 underline decoration-white/10 underline-offset-4">
+            <a href={adminPath} className="block text-center text-sm text-slate-400 underline decoration-white/10 underline-offset-4">
               {copy.back}
             </a>
           </form>

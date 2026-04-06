@@ -8,6 +8,9 @@ RUN corepack enable && pnpm install --frozen-lockfile
 
 COPY . .
 
+ARG VITE_ADMIN_PATH=/auth
+ENV VITE_ADMIN_PATH=${VITE_ADMIN_PATH}
+
 RUN pnpm build
 
 FROM nginx:1.29-alpine

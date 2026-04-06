@@ -4,7 +4,7 @@ Frontend application for `fatihozkurt.com`.
 
 This project includes:
 - Public one-page portfolio surface
-- Hidden `/auth` admin panel UI
+- Hidden admin panel UI (configurable route)
 - Responsive layouts for desktop/tablet/mobile
 - API-driven content rendering from backend
 - Rich project cards, modal details, pagination, and media gallery behavior
@@ -26,7 +26,7 @@ This project includes:
 - Project detail modal with gallery slider support
 - Contact form with backend submit flow
 - Hidden admin route:
-  - `/auth`
+  - `/auth` (default)
   - content CRUD orchestration
   - file upload driven flows (resume/images/icons)
 
@@ -35,6 +35,7 @@ This project includes:
 Optional env:
 
 - `VITE_API_BASE_URL`
+- `VITE_ADMIN_PATH` (default: `/auth`)
 
 If empty, frontend falls back to current origin.
 
@@ -74,12 +75,12 @@ Health endpoint:
 ## Routes
 
 - Public: `/`
-- Auth UI: `/auth`
-- Reset password UI: `/auth/reset-password?token=...`
+- Auth UI: `VITE_ADMIN_PATH` (default `/auth`)
+- Reset password UI: `${VITE_ADMIN_PATH}/reset-password?token=...`
 
 ## Notes for Production
 
-- Keep `/auth` route undiscoverable from public nav
+- Keep admin route undiscoverable from public nav
 - Point frontend and backend behind same domain/reverse proxy when possible
 - Handle `/api/*` routing at the host reverse-proxy layer (not inside frontend container Nginx)
 - Ensure CSP, cache, and security headers are preserved at gateway level
@@ -94,4 +95,4 @@ Health endpoint:
 - Empty-data rendering scenarios
 
 ---
-For server rollout, pair this repo with backend deployment and verify `/auth -> save -> public reflection` after release.
+For server rollout, pair this repo with backend deployment and verify `admin route -> save -> public reflection` after release.

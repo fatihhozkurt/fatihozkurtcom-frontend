@@ -2353,7 +2353,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
         <div className="grid w-full gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <section className="space-y-6">
             <div className="flex items-center justify-between gap-4"><div className="inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100"><LockKeyhole size={14} />{copy.hiddenAccess}</div><LanguageSwitch locale={locale} setLocale={setLocale} labels={langLabels} /></div>
-            <div className="space-y-4"><h1 className="text-5xl font-semibold tracking-tight text-white md:text-6xl">/auth</h1><p className="max-w-xl text-base leading-8 text-slate-300 md:text-lg">{copy.description}</p></div>
+            <div className="space-y-4"><h1 className="text-5xl font-semibold tracking-tight text-white md:text-6xl">{copy.adminLogin}</h1><p className="max-w-xl text-base leading-8 text-slate-300 md:text-lg">{copy.description}</p></div>
           </section>
           <section className="glass-card rounded-[2rem] p-6 md:p-8">
             <p className="text-xs uppercase tracking-[0.34em] text-slate-500">{forgotMode ? copy.passwordReset : copy.adminLogin}</p>

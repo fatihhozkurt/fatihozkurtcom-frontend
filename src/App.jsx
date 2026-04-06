@@ -42,9 +42,35 @@ const contactIconMap = {
   github: Github,
 }
 
+const DEFAULT_ADMIN_PATH = '/auth'
+
 function safeList(value) {
   return Array.isArray(value) ? value : []
 }
+
+function normalizePathname(pathname) {
+  const raw = String(pathname || '/').trim() || '/'
+  const collapsed = raw.replace(/\/{2,}/g, '/')
+  if (collapsed.length > 1 && collapsed.endsWith('/')) {
+    return collapsed.slice(0, -1)
+  }
+  return collapsed
+}
+
+function normalizeAdminPath(path) {
+  const raw = String(path || '').trim()
+  if (!raw) {
+    return DEFAULT_ADMIN_PATH
+  }
+
+  const withLeadingSlash = raw.startsWith('/') ? raw : `/${raw}`
+  const collapsed = withLeadingSlash.replace(/\/{2,}/g, '/')
+  const normalized = collapsed.length > 1 && collapsed.endsWith('/') ? collapsed.slice(0, -1) : collapsed
+  return normalized === '/' ? DEFAULT_ADMIN_PATH : normalized
+}
+
+const ADMIN_ROUTE = normalizeAdminPath(import.meta.env.VITE_ADMIN_PATH)
+const ADMIN_RESET_ROUTE = `${ADMIN_ROUTE}/reset-password`
 
 const LOCALIZED_PREFIX = '__I18N__'
 
@@ -1618,7 +1644,7 @@ function PublicSite({ locale, setLocale }) {
 }
 
 function App() {
-  const pathname = window.location.pathname
+  const pathname = normalizePathname(window.location.pathname)
   const [locale, setLocale] = useState(() => {
     if (typeof window === 'undefined') {
       return 'en'
@@ -1634,14 +1660,14 @@ function App() {
 
   useEffect(() => {
     const meta = uiText[locale].meta
-    const isAuthPage = pathname === '/auth' || pathname === '/auth/reset-password'
+    const isAuthPage = pathname === ADMIN_ROUTE || pathname === ADMIN_RESET_ROUTE
     const title = isAuthPage ? `${meta.title} | Admin` : meta.title
     const description = isAuthPage
       ? 'Restricted admin login surface for Fatih Özkurt portfolio operations.'
       : meta.description
-    const canonicalUrl = pathname === '/auth/reset-password'
-      ? 'https://fatihozkurt.com/auth/reset-password'
-      : (isAuthPage ? 'https://fatihozkurt.com/auth' : 'https://fatihozkurt.com/')
+    const canonicalUrl = pathname === ADMIN_RESET_ROUTE
+      ? `https://fatihozkurt.com${ADMIN_RESET_ROUTE}`
+      : (isAuthPage ? `https://fatihozkurt.com${ADMIN_ROUTE}` : 'https://fatihozkurt.com/')
     const ogImage = 'https://fatihozkurt.com/og-image.svg'
     const keywords = locale === 'tr'
       ? 'Fatih Özkurt, Fatih Ozkurt, fatihozkurt, java backend developer, spring boot, backend engineer, istanbul yazılım'
@@ -1767,12 +1793,12 @@ function App() {
     }
   }, [locale, pathname])
 
-  if (pathname === '/auth/reset-password') {
-    return <ResetPasswordPortal locale={locale} setLocale={setLocale} langLabels={uiText[locale].lang} />
+  if (pathname === ADMIN_RESET_ROUTE) {
+    return <ResetPasswordPortal locale={locale} setLocale={setLocale} langLabels={uiText[locale].lang} adminPath={ADMIN_ROUTE} />
   }
 
-  if (pathname === '/auth') {
-    return <AuthPortal locale={locale} setLocale={setLocale} text={uiText[locale].auth} langLabels={uiText[locale].lang} />
+  if (pathname === ADMIN_ROUTE) {
+    return <AuthPortal locale={locale} setLocale={setLocale} text={uiText[locale].auth} langLabels={uiText[locale].lang} adminPath={ADMIN_ROUTE} />
   }
 
   return <PublicSite locale={locale} setLocale={setLocale} />
