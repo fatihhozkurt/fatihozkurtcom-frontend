@@ -365,8 +365,8 @@ function CharacterSticker({ src, className = '' }) {
 const DESKTOP_LIST_PAGE_SIZE = 6
 const MOBILE_LIST_PAGE_SIZE = 3
 const MOBILE_MEDIA_QUERY = '(max-width: 767px)'
-const HERO_BADGE_ROTATE_MS = 10000
-const HERO_BADGE_EXIT_MS = 360
+const HERO_BADGE_ROTATE_MS = 14000
+const HERO_BADGE_TRANSITION_MS = 260
 
 function PublicSite({ locale, setLocale }) {
   const text = uiText[locale]
@@ -468,8 +468,8 @@ function PublicSite({ locale, setLocale }) {
     return safeList(text.hero.rotatingLines).filter(Boolean)
   }, [locale, resolvedHeroContent?.welcomeText, text.hero.rotatingLines])
   const [heroBadgeLineIndex, setHeroBadgeLineIndex] = useState(() => randomIndex(safeList(uiText.en.hero.rotatingLines).length))
-  const [heroBadgeMotionPhase, setHeroBadgeMotionPhase] = useState('open')
-  const [heroBadgeMotionDirection, setHeroBadgeMotionDirection] = useState('right')
+  const [heroBadgePrevLine, setHeroBadgePrevLine] = useState('')
+  const [heroBadgeIsTransitioning, setHeroBadgeIsTransitioning] = useState(false)
   const heroBadgeLine = heroBadgeLines[heroBadgeLineIndex] || localizedText(resolvedHeroContent?.welcomeText, locale) || text.hero.currentCandidate
   const resolveSectionHeading = useCallback(
     (sectionKey, fallback) => {
@@ -648,7 +648,8 @@ function PublicSite({ locale, setLocale }) {
       heroBadgeSwapTimeoutRef.current = null
     }
     setHeroBadgeLineIndex(randomIndex(heroBadgeLines.length))
-    setHeroBadgeMotionPhase('open')
+    setHeroBadgePrevLine('')
+    setHeroBadgeIsTransitioning(false)
   }, [heroBadgeLines.length, locale])
 
   useEffect(() => {
@@ -657,13 +658,17 @@ function PublicSite({ locale, setLocale }) {
     }
 
     const startBadgeSwap = () => {
-      setHeroBadgeMotionPhase('closing')
+      setHeroBadgeIsTransitioning(true)
+      setHeroBadgeLineIndex((current) => {
+        const currentLine = heroBadgeLines[current] || heroBadgeLines[0] || ''
+        setHeroBadgePrevLine(currentLine)
+        return randomIndex(heroBadgeLines.length, current)
+      })
       heroBadgeSwapTimeoutRef.current = window.setTimeout(() => {
-        setHeroBadgeLineIndex((current) => randomIndex(heroBadgeLines.length, current))
-        setHeroBadgeMotionDirection((current) => (current === 'right' ? 'left' : 'right'))
-        setHeroBadgeMotionPhase('opening')
+        setHeroBadgePrevLine('')
+        setHeroBadgeIsTransitioning(false)
         heroBadgeSwapTimeoutRef.current = null
-      }, HERO_BADGE_EXIT_MS)
+      }, HERO_BADGE_TRANSITION_MS)
     }
 
     const intervalId = window.setInterval(() => {
@@ -1165,12 +1170,13 @@ function PublicSite({ locale, setLocale }) {
             <div className="mx-auto flex min-h-[calc(100vh-10rem)] w-full max-w-6xl flex-col items-center justify-start pt-8 text-center md:pt-2">
               <div
                 data-reveal
-                className={`reveal hero-badge hero-badge--${heroBadgeMotionPhase} hero-badge--${heroBadgeMotionDirection} inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100`}
+                className={`reveal hero-badge inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100 ${heroBadgeIsTransitioning ? 'is-transitioning' : ''}`}
                 style={{ '--reveal-delay': '120ms' }}
               >
                 <Sparkles size={14} />
                 <span className="hero-badge-line">
-                  {heroBadgeLine}
+                  {heroBadgePrevLine ? <span className="hero-badge-text hero-badge-text--previous">{heroBadgePrevLine}</span> : null}
+                  <span className={`hero-badge-text hero-badge-text--current ${heroBadgeIsTransitioning ? 'is-entering' : ''}`}>{heroBadgeLine}</span>
                 </span>
               </div>
               <div
