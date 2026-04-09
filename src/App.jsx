@@ -1073,7 +1073,7 @@ function PublicSite({ locale, setLocale }) {
 
           <nav
             aria-label={text.accessibility.primaryNavigation}
-            className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 p-1 md:ml-auto md:mr-12 md:flex lg:mr-16"
+            className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 p-1 lg:ml-auto lg:mr-16 lg:flex"
           >
             {navigationItems.map((item) => (
               <SectionLink
@@ -1091,7 +1091,7 @@ function PublicSite({ locale, setLocale }) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 lg:hidden"
             aria-label={mobileMenuOpen ? text.accessibility.closeNavigation : text.accessibility.openNavigation}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
@@ -1099,14 +1099,14 @@ function PublicSite({ locale, setLocale }) {
             {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
-        <div className="pointer-events-none absolute inset-y-0 right-4 hidden items-center md:flex md:right-8">
+        <div className="pointer-events-none absolute inset-y-0 right-4 hidden items-center lg:flex lg:right-8">
           <div aria-label={text.accessibility.languageSwitcher} className="pointer-events-auto">
             <LanguageSwitch locale={locale} setLocale={setLocale} labels={text.lang} />
           </div>
         </div>
 
         {mobileMenuOpen ? (
-          <div id="mobile-navigation" className="border-t border-white/10 bg-[rgba(8,10,18,0.92)] px-4 py-3 md:hidden">
+          <div id="mobile-navigation" className="border-t border-white/10 bg-[rgba(8,10,18,0.92)] px-4 py-3 lg:hidden">
             <div className="flex flex-col gap-2">
               <div className="pb-2" aria-label={text.accessibility.languageSwitcher}>
                 <LanguageSwitch locale={locale} setLocale={setLocale} labels={text.lang} />

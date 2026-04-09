@@ -447,4 +447,8 @@ button:disabled {
     --character-max-size: 10.5rem;
     left: clamp(0.35rem, 3.8vw, 1.6rem);
   }
+
+  .character-contact {
+    display: none;
+  }
 }

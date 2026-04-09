@@ -37,7 +37,7 @@ export function Section({ id, className = '', children, divider = true }) {
     <section
       id={id}
       data-section={id}
-      className={`relative mx-auto min-h-screen max-w-7xl scroll-mt-28 px-4 py-16 md:px-8 ${className}`}
+      className={`relative mx-auto max-w-7xl scroll-mt-28 px-4 pb-8 md:px-8 md:pb-12 ${className}`}
     >
       {children}
       {divider ? (
