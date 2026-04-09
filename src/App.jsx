@@ -1132,9 +1132,9 @@ function PublicSite({ locale, setLocale }) {
       </header>
 
       <main id="main-content" className="relative z-10">
-        <Section id="home" className="overflow-hidden pt-24 md:pt-32">
+        <Section id="home" className="overflow-hidden pt-24 md:pt-28 xl:pt-32">
           <div className="relative">
-            <div className="mx-auto flex min-h-[calc(100vh-10rem)] w-full max-w-6xl flex-col items-center justify-start pt-8 text-center md:pt-2">
+            <div className="mx-auto flex min-h-[34rem] w-full max-w-6xl flex-col items-center justify-start pt-6 text-center md:min-h-[40rem] md:pt-2 lg:min-h-[calc(100vh-10rem)]">
               <div
                 data-reveal
                 className="reveal relative z-30 inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100"
@@ -1147,23 +1147,23 @@ function PublicSite({ locale, setLocale }) {
               </div>
               <div
                 data-reveal
-                className="reveal relative mt-8 rounded-[2.5rem] border border-white/8 bg-white/[0.025] px-6 py-10 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] md:px-12 md:py-14"
+                className="reveal relative mt-6 rounded-[2.5rem] border border-white/8 bg-white/[0.025] px-6 py-10 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] md:px-10 md:py-12 lg:px-12 lg:py-14"
                 style={{ '--reveal-delay': '220ms' }}
               >
                 <CharacterSticker src="/avatars/home-laptop.png" className="character-ghost character-sticker character-home" />
-                <h1 className="mx-auto max-w-5xl font-display text-6xl font-semibold leading-[0.9] tracking-tight text-white md:text-[7.5rem] md:leading-[0.88]">
+                <h1 className="mx-auto max-w-5xl font-display text-6xl font-semibold leading-[0.9] tracking-tight text-white md:text-[6.4rem] md:leading-[0.88] lg:text-[7.5rem]">
                   {resolvedHeroContent?.fullName || text.hero.name}
                 </h1>
-                <p className="mt-2 text-[1.25rem] font-medium uppercase tracking-[0.16em] text-sky-200/72 md:text-[1.7rem]">
+                <p className="mt-2 text-[1.25rem] font-medium uppercase tracking-[0.16em] text-sky-200/72 md:text-[1.5rem] lg:text-[1.7rem]">
                   {resolvedHeroContent?.title || text.hero.title}
                 </p>
-                <p className="mx-auto max-w-3xl pt-6 text-base leading-8 text-slate-300 md:text-lg">
+                <p className="mx-auto max-w-3xl pt-5 text-base leading-8 text-slate-300 md:text-[1.05rem] lg:text-lg">
                   {resolvedHeroContent?.description || text.hero.description}
                 </p>
               </div>
               <div
                 data-reveal
-                className="reveal mt-6 flex flex-wrap items-center justify-center gap-3"
+                className="reveal mt-5 flex flex-wrap items-center justify-center gap-3 md:mt-6"
                 style={{ '--reveal-delay': '320ms' }}
               >
                 <SectionLink
@@ -1179,7 +1179,7 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="about" className="pt-20 md:pt-28">
+        <Section id="about" className="pt-20 md:pt-24 xl:pt-28">
           <div className="relative z-10 grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
             <div data-reveal className="reveal">
               <SectionHeading
@@ -1246,7 +1246,7 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="projects" className="pt-20 md:pt-28">
+        <Section id="projects" className="pt-20 md:pt-24 xl:pt-28">
           <div className="relative z-10 space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
@@ -1403,7 +1403,7 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="writings" className="pt-20 md:pt-28">
+        <Section id="writings" className="pt-20 md:pt-24 xl:pt-28">
           <div className="relative z-10 space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
@@ -1418,7 +1418,7 @@ function PublicSite({ locale, setLocale }) {
               </div>
             ) : (
               <>
-              <div className="writings-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 lg:grid-cols-3">
+              <div className="writings-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-3">
                 {visibleArticles.map((article, index) => (
                   <div key={article.id} data-reveal className={`writings-rail-item reveal ${index === 0 ? 'relative' : ''}`} style={{ '--reveal-delay': `${50 + index * 90}ms` }}>
                     <a href={article.href} target="_blank" rel="noreferrer" className={`surface-card group block rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 transition hover:-translate-y-1 hover:border-orange-300/25 ${index > 0 ? 'surface-card-delayed' : ''}`}>
@@ -1469,7 +1469,7 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="resume" className="pt-20 md:pt-28">
+        <Section id="resume" className="pt-20 md:pt-24 xl:pt-28">
           <div className="space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
@@ -1517,7 +1517,7 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="contact" className="min-h-0 pb-24 pt-20 md:pt-28" divider={false}>
+        <Section id="contact" className="min-h-0 pb-24 pt-20 md:pt-24 xl:pt-28" divider={false}>
           <div className="relative z-10 grid items-start gap-10 xl:grid-cols-[0.78fr_1.02fr] xl:grid-rows-[auto_1fr] xl:gap-x-12 xl:gap-y-8">
             <div data-reveal className="reveal xl:col-span-2 xl:row-start-1">
               <SectionHeading
