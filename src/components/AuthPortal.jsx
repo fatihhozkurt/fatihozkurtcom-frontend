@@ -2624,15 +2624,14 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
                     </div>
                     <label className="block space-y-1.5">
                       <span className="relative -top-1 pl-3 text-sm text-slate-300">{copy.mfaSetupCodeLabel}</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="\\d*"
-                        maxLength={6}
-                        value={mfaSetupForm.code}
-                        onChange={handleMfaSetupFieldChange('code')}
-                        className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm tracking-[0.25em] text-white outline-none"
-                      />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={mfaSetupForm.code}
+                    onChange={handleMfaSetupFieldChange('code')}
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm tracking-[0.25em] text-white outline-none"
+                  />
                     </label>
                     <button
                       type="button"
@@ -2651,14 +2650,13 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
                 </button>
               </div>
             ) : mfaChallenge.required ? (
-              <form className="mt-6 space-y-5" onSubmit={handleVerifyMfa}>
+              <form className="mt-6 space-y-5" onSubmit={handleVerifyMfa} noValidate>
                 <p className="text-sm leading-7 text-slate-400">{copy.mfaRequiredHint}</p>
                 <label className="block space-y-1.5">
                   <span className="relative -top-1 pl-3 text-sm text-slate-300">{copy.mfaCodeLabel}</span>
                   <input
                     type="text"
                     inputMode="numeric"
-                    pattern="\\d*"
                     maxLength={6}
                     value={mfaCode}
                     onChange={(event) => setMfaCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
