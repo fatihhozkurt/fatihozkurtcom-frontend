@@ -103,7 +103,7 @@ describe('App', () => {
     expect(screen.getAllByRole('heading', { name: /fatih özkurt/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/java backend developer/i).length).toBeGreaterThan(0)
     expect(screen.getByRole('heading', { name: /projects i ship\./i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /let's contact\./i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /let's connect\./i })).toBeInTheDocument()
     expect(screen.queryByText(/backend hook point/i)).not.toBeInTheDocument()
   })
 

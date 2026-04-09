@@ -129,7 +129,7 @@ export function ProjectModal({ project, onClose, text }) {
                       type="button"
                       onClick={goPrev}
                       className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/45 text-slate-100 hover:bg-slate-900/70"
-                      aria-label="Previous image"
+                      aria-label={text.previousImage || 'Previous image'}
                     >
                       <ChevronLeft size={18} />
                     </button>
@@ -137,7 +137,7 @@ export function ProjectModal({ project, onClose, text }) {
                       type="button"
                       onClick={goNext}
                       className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/45 text-slate-100 hover:bg-slate-900/70"
-                      aria-label="Next image"
+                      aria-label={text.nextImage || 'Next image'}
                     >
                       <ChevronRight size={18} />
                     </button>
@@ -147,7 +147,7 @@ export function ProjectModal({ project, onClose, text }) {
                           key={`${project.id}-${imageUrl}-${index}`}
                           type="button"
                           onClick={() => setActiveSlide(index)}
-                          aria-label={`Go to image ${index + 1}`}
+                          aria-label={`${text.goToImage || 'Go to image'} ${index + 1}`}
                           className={`h-1.5 w-1.5 rounded-full ${activeSlide === index ? 'bg-sky-200' : 'bg-slate-500/80'}`}
                         />
                       ))}

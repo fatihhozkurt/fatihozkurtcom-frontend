@@ -12,6 +12,9 @@ export const uiText = {
       primaryNavigation: 'Primary navigation',
       languageSwitcher: 'Language switcher',
       closeProjectDetails: 'Close project details',
+      previousImage: 'Previous image',
+      nextImage: 'Next image',
+      goToImage: 'Go to image',
     },
     brandSubtitle: 'backend playground',
     hero: {
@@ -76,7 +79,7 @@ export const uiText = {
       },
       writings: {
         eyebrow: 'Writings',
-        title: 'Blogs and writings.',
+        title: 'Articles and insights.',
         description:
           'I write when a backend problem teaches me something worth sharing, especially around security and observability.',
         emptyPlaceholder: 'No writings yet, but drafts are probably in my notes app already.',
@@ -100,8 +103,8 @@ export const uiText = {
       },
       contact: {
         eyebrow: 'Contact',
-        title: "Let's contact.",
-        description: 'I am always open to new offers.',
+        title: "Let's connect.",
+        description: 'Open to meaningful collaborations, product conversations, and backend projects.',
         titleLabel: 'Title',
         emailLabel: 'Email',
         contentLabel: 'Content',
@@ -156,6 +159,9 @@ export const uiText = {
       primaryNavigation: 'Ana navigasyon',
       languageSwitcher: 'Dil değiştirici',
       closeProjectDetails: 'Proje detaylarını kapat',
+      previousImage: '\u00d6nceki g\u00f6rsel',
+      nextImage: 'Sonraki g\u00f6rsel',
+      goToImage: 'G\u00f6rsele git',
     },
     brandSubtitle: 'backend playground',
     hero: {
@@ -244,7 +250,7 @@ export const uiText = {
       contact: {
         eyebrow: 'İletişim',
         title: 'İletişime geçelim.',
-        description: 'Yeni tekliflere her zaman açığım.',
+        description: 'Anlaml\u0131 i\u015f birlikleri, \u00fcr\u00fcn odakl\u0131 g\u00f6r\u00fc\u015fmeler ve backend projeleri i\u00e7in her zaman ula\u015fabilirsiniz.',
         titleLabel: 'Başlık',
         emailLabel: 'E-posta',
         contentLabel: 'İçerik',

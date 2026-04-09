@@ -1622,6 +1622,9 @@ function PublicSite({ locale, setLocale }) {
             github: text.sections.projects.github,
             liveAddress: locale === 'tr' ? 'Canlı adres' : 'Live address',
             readmeView: locale === 'tr' ? 'README görünümü' : 'README view',
+            previousImage: text.accessibility.previousImage,
+            nextImage: text.accessibility.nextImage,
+            goToImage: text.accessibility.goToImage,
             closeProjectDetails: text.accessibility.closeProjectDetails,
           }}
         />
@@ -1649,8 +1652,12 @@ function App() {
     const meta = uiText[locale].meta
     const isAuthPage = pathname === ADMIN_ROUTE || pathname === ADMIN_RESET_ROUTE
     const title = isAuthPage ? `${meta.title} | Admin` : meta.title
+    const authMetaDescription =
+      locale === 'tr'
+        ? 'Fatih \u00d6zkurt portf\u00f6y operasyonlar\u0131 i\u00e7in s\u0131n\u0131rl\u0131 admin giri\u015f y\u00fczeyi.'
+        : 'Restricted admin login surface for Fatih Ozkurt portfolio operations.'
     const description = isAuthPage
-      ? 'Restricted admin login surface for Fatih Özkurt portfolio operations.'
+      ? authMetaDescription
       : meta.description
     const canonicalUrl = pathname === ADMIN_RESET_ROUTE
       ? `https://fatihozkurt.com${ADMIN_RESET_ROUTE}`
