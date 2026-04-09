@@ -93,6 +93,8 @@ const copyByLocale = {
     mfaCurrentPassword: 'Current password',
     mfaInitiate: 'Generate setup secret',
     mfaSetupSecret: 'Secret key',
+    mfaSetupQr: 'Scan QR',
+    mfaSetupQrFallback: 'QR could not be generated. You can still use the setup URI or secret key below.',
     mfaSetupUri: 'Setup URI',
     mfaSetupCodeLabel: '6-digit code',
     mfaConfirm: 'Enable 2FA',
@@ -136,6 +138,8 @@ const copyByLocale = {
     mfaCurrentPassword: 'Mevcut şifre',
     mfaInitiate: 'Kurulum secret üret',
     mfaSetupSecret: 'Secret anahtarı',
+    mfaSetupQr: 'QR tara',
+    mfaSetupQrFallback: 'QR üretilemedi. Aşağıdaki kurulum URI veya secret anahtarını yine kullanabilirsin.',
     mfaSetupUri: 'Kurulum URI',
     mfaSetupCodeLabel: '6 haneli kod',
     mfaConfirm: '2FA aç',
@@ -809,6 +813,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     code: '',
   })
   const [mfaSetupSecret, setMfaSetupSecret] = useState(null)
+  const [mfaSetupQrLoadFailed, setMfaSetupQrLoadFailed] = useState(false)
   const [forgotMode, setForgotMode] = useState(false)
   const [form, setForm] = useState({ username: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
@@ -953,6 +958,13 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     () => mfaSetupSecret && /^\d{6}$/.test(mfaSetupForm.code),
     [mfaSetupForm.code, mfaSetupSecret],
   )
+  const mfaSetupQrUrl = useMemo(() => {
+    const otpauthUri = mfaSetupSecret?.otpauthUri?.trim()
+    if (!otpauthUri) {
+      return ''
+    }
+    return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&ecc=M&margin=0&data=${encodeURIComponent(otpauthUri)}`
+  }, [mfaSetupSecret?.otpauthUri])
   const canSendReset = true
 
   useEffect(() => {
@@ -1169,6 +1181,10 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
       setIsBusy(false)
     }
   }
+
+  useEffect(() => {
+    setMfaSetupQrLoadFailed(false)
+  }, [mfaSetupQrUrl])
 
   const loadAdminData = useCallback(async () => {
     if (!authenticated) {
@@ -2575,6 +2591,19 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
                 </button>
                 {mfaSetupSecret ? (
                   <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{copy.mfaSetupQr}</p>
+                      {mfaSetupQrUrl && !mfaSetupQrLoadFailed ? (
+                        <img
+                          src={mfaSetupQrUrl}
+                          alt={copy.mfaSetupQr}
+                          onError={() => setMfaSetupQrLoadFailed(true)}
+                          className="mt-3 h-44 w-44 rounded-xl border border-white/10 bg-white p-2"
+                        />
+                      ) : (
+                        <p className="mt-2 text-xs text-slate-300">{copy.mfaSetupQrFallback}</p>
+                      )}
+                    </div>
                     <div>
                       <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{copy.mfaSetupSecret}</p>
                       <p className="mt-2 break-all text-sm text-slate-100">{mfaSetupSecret.secret}</p>
