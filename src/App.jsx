@@ -365,6 +365,8 @@ function CharacterSticker({ src, className = '' }) {
 const DESKTOP_LIST_PAGE_SIZE = 6
 const MOBILE_LIST_PAGE_SIZE = 3
 const MOBILE_MEDIA_QUERY = '(max-width: 767px)'
+const HERO_BADGE_ROTATE_MS = 10000
+const HERO_BADGE_EXIT_MS = 320
 
 function PublicSite({ locale, setLocale }) {
   const text = uiText[locale]
@@ -408,6 +410,7 @@ function PublicSite({ locale, setLocale }) {
   const techTrackRef = useRef(null)
   const techResumeTimeoutRef = useRef(null)
   const techIntervalRef = useRef(null)
+  const heroBadgeSwapTimeoutRef = useRef(null)
   const techDragRef = useRef({
     active: false,
     dragging: false,
@@ -465,6 +468,8 @@ function PublicSite({ locale, setLocale }) {
     return safeList(text.hero.rotatingLines).filter(Boolean)
   }, [locale, resolvedHeroContent?.welcomeText, text.hero.rotatingLines])
   const [heroBadgeLineIndex, setHeroBadgeLineIndex] = useState(() => randomIndex(safeList(uiText.en.hero.rotatingLines).length))
+  const [heroBadgeMotionPhase, setHeroBadgeMotionPhase] = useState('enter')
+  const [heroBadgeMotionDirection, setHeroBadgeMotionDirection] = useState('right')
   const heroBadgeLine = heroBadgeLines[heroBadgeLineIndex] || localizedText(resolvedHeroContent?.welcomeText, locale) || text.hero.currentCandidate
   const resolveSectionHeading = useCallback(
     (sectionKey, fallback) => {
@@ -638,7 +643,12 @@ function PublicSite({ locale, setLocale }) {
   }, [articles.length, locale])
 
   useEffect(() => {
+    if (heroBadgeSwapTimeoutRef.current) {
+      window.clearTimeout(heroBadgeSwapTimeoutRef.current)
+      heroBadgeSwapTimeoutRef.current = null
+    }
     setHeroBadgeLineIndex(randomIndex(heroBadgeLines.length))
+    setHeroBadgeMotionPhase('enter')
   }, [heroBadgeLines.length, locale])
 
   useEffect(() => {
@@ -646,11 +656,30 @@ function PublicSite({ locale, setLocale }) {
       return undefined
     }
 
-    const intervalId = window.setInterval(() => {
-      setHeroBadgeLineIndex((current) => randomIndex(heroBadgeLines.length, current))
-    }, 10000)
+    const startBadgeSwap = () => {
+      setHeroBadgeMotionPhase('exit')
+      heroBadgeSwapTimeoutRef.current = window.setTimeout(() => {
+        setHeroBadgeLineIndex((current) => randomIndex(heroBadgeLines.length, current))
+        setHeroBadgeMotionDirection((current) => (current === 'right' ? 'left' : 'right'))
+        setHeroBadgeMotionPhase('enter')
+        heroBadgeSwapTimeoutRef.current = null
+      }, HERO_BADGE_EXIT_MS)
+    }
 
-    return () => window.clearInterval(intervalId)
+    const intervalId = window.setInterval(() => {
+      if (heroBadgeSwapTimeoutRef.current) {
+        return
+      }
+      startBadgeSwap()
+    }, HERO_BADGE_ROTATE_MS)
+
+    return () => {
+      window.clearInterval(intervalId)
+      if (heroBadgeSwapTimeoutRef.current) {
+        window.clearTimeout(heroBadgeSwapTimeoutRef.current)
+        heroBadgeSwapTimeoutRef.current = null
+      }
+    }
   }, [heroBadgeLines.length])
 
   useEffect(() => {
@@ -1140,7 +1169,7 @@ function PublicSite({ locale, setLocale }) {
                 style={{ '--reveal-delay': '120ms' }}
               >
                 <Sparkles size={14} />
-                <span key={`${locale}-${heroBadgeLineIndex}-${heroBadgeLine}`} className="hero-badge-line">
+                <span className={`hero-badge-line hero-badge-line--${heroBadgeMotionPhase} hero-badge-line--${heroBadgeMotionDirection}`}>
                   {heroBadgeLine}
                 </span>
               </div>
