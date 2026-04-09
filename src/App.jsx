@@ -42,7 +42,8 @@ const contactIconMap = {
   github: Github,
 }
 
-const DEFAULT_ADMIN_PATH = '/auth'
+const ADMIN_ROUTE = '/auth'
+const ADMIN_RESET_ROUTE = '/auth/reset-password'
 
 function safeList(value) {
   return Array.isArray(value) ? value : []
@@ -56,21 +57,6 @@ function normalizePathname(pathname) {
   }
   return collapsed
 }
-
-function normalizeAdminPath(path) {
-  const raw = String(path || '').trim()
-  if (!raw) {
-    return DEFAULT_ADMIN_PATH
-  }
-
-  const withLeadingSlash = raw.startsWith('/') ? raw : `/${raw}`
-  const collapsed = withLeadingSlash.replace(/\/{2,}/g, '/')
-  const normalized = collapsed.length > 1 && collapsed.endsWith('/') ? collapsed.slice(0, -1) : collapsed
-  return normalized === '/' ? DEFAULT_ADMIN_PATH : normalized
-}
-
-const ADMIN_ROUTE = normalizeAdminPath(import.meta.env.VITE_ADMIN_PATH)
-const ADMIN_RESET_ROUTE = `${ADMIN_ROUTE}/reset-password`
 
 const LOCALIZED_PREFIX = '__I18N__'
 

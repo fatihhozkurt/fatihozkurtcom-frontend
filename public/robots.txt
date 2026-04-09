@@ -2,6 +2,10 @@ User-agent: *
 Allow: /
 Disallow: /auth
 Disallow: /auth/
+Disallow: /swagger-ui
+Disallow: /swagger-ui/
+Disallow: /v3/api-docs
+Disallow: /v3/api-docs/
 Disallow: /api/v1/admin/
 
 Sitemap: https://fatihozkurt.com/sitemap.xml

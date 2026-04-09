@@ -24,7 +24,9 @@ import {
   deleteAdminProject,
   deleteAdminTechItem,
   forgotPassword,
+  getMfaStatus,
   getAdminAbout,
+  initiateMfaSetup,
   getAdminArticles,
   getAdminAuditEvents,
   getAdminContactMessages,
@@ -42,6 +44,7 @@ import {
   getAdminVisitTrend,
   getCsrf,
   login,
+  loginMfa,
   logout,
   refreshAccessToken,
   uploadAdminResume,
@@ -53,6 +56,7 @@ import {
   updateAdminHero,
   updateAdminProject,
   updateAdminTechItem,
+  confirmMfaSetup,
   updateCredentials,
 } from '../apiClient'
 import worldMapUrl from 'world-atlas/countries-110m.json?url'
@@ -76,10 +80,23 @@ const copyByLocale = {
     password: 'Password',
     login: 'Login',
     forgotPassword: 'Forgot your password?',
+    mfaRequiredHint: 'Enter the 6-digit code from your authenticator app to complete sign-in.',
+    mfaCodeLabel: 'Authenticator code',
+    mfaVerify: 'Verify code',
+    mfaBack: 'Back',
     resetHint: 'Reset link is always sent to the owner inbox configured in the system.',
     sendResetLink: 'Send reset link',
     backToLogin: 'Back to login',
     passwordRule: 'Minimum 8 characters, uppercase, lowercase, number, and symbol.',
+    mfaSetupTitle: 'Two-factor setup is required',
+    mfaSetupHint: 'Before accessing admin APIs, connect an authenticator app and confirm one code.',
+    mfaCurrentPassword: 'Current password',
+    mfaInitiate: 'Generate setup secret',
+    mfaSetupSecret: 'Secret key',
+    mfaSetupUri: 'Setup URI',
+    mfaSetupCodeLabel: '6-digit code',
+    mfaConfirm: 'Enable 2FA',
+    mfaSetupDone: '2FA enabled successfully.',
     hiddenWorkspace: 'Hidden workspace',
     adminSurface: 'Admin control surface',
     logout: 'Logout',
@@ -106,10 +123,23 @@ const copyByLocale = {
     password: 'Şifre',
     login: 'Giriş yap',
     forgotPassword: 'Şifreni mi unuttun?',
+    mfaRequiredHint: 'Girişi tamamlamak için doğrulama uygulamandaki 6 haneli kodu gir.',
+    mfaCodeLabel: 'Doğrulama kodu',
+    mfaVerify: 'Kodu doğrula',
+    mfaBack: 'Geri',
     resetHint: 'Reset link her zaman sistemde tanımlı sahibi e-posta adresine gönderilir.',
     sendResetLink: 'Reset linki gönder',
     backToLogin: 'Girişe dön',
     passwordRule: 'Minimum 8 karakter, büyük harf, küçük harf, sayı ve sembol zorunlu.',
+    mfaSetupTitle: 'İki adımlı doğrulama kurulumu gerekli',
+    mfaSetupHint: 'Admin API erişimi için doğrulama uygulamasını bağlayıp bir kod onaylamalısın.',
+    mfaCurrentPassword: 'Mevcut şifre',
+    mfaInitiate: 'Kurulum secret üret',
+    mfaSetupSecret: 'Secret anahtarı',
+    mfaSetupUri: 'Kurulum URI',
+    mfaSetupCodeLabel: '6 haneli kod',
+    mfaConfirm: '2FA aç',
+    mfaSetupDone: '2FA başarıyla açıldı.',
     hiddenWorkspace: 'Gizli çalışma alanı',
     adminSurface: 'Admin kontrol yüzeyi',
     logout: 'Çıkış yap',
@@ -766,6 +796,19 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   const copy = copyByLocale[locale] ?? copyByLocale.en
   const sections = sectionCopy[locale] ?? sectionCopy.en
   const [accessToken, setAccessToken] = useState('')
+  const [mfaVerified, setMfaVerified] = useState(false)
+  const [mfaChallenge, setMfaChallenge] = useState({
+    required: false,
+    token: '',
+    expiresIn: 0,
+    username: '',
+  })
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaSetupForm, setMfaSetupForm] = useState({
+    currentPassword: '',
+    code: '',
+  })
+  const [mfaSetupSecret, setMfaSetupSecret] = useState(null)
   const [forgotMode, setForgotMode] = useState(false)
   const [form, setForm] = useState({ username: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
@@ -830,7 +873,8 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   const [confirmModal, setConfirmModal] = useState(null)
   const [toast, setToast] = useState(null)
 
-  const authenticated = Boolean(accessToken)
+  const authenticated = Boolean(accessToken) && mfaVerified
+  const hasSession = Boolean(accessToken)
   const metrics = useMemo(() => {
     const visitsToday = Number(dashboardOverview?.visitsToday) || 0
     const failedLogins = Number(dashboardOverview?.failedLoginsToday) || 0
@@ -903,6 +947,12 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   }, [visitTrend])
 
   const canSubmit = useMemo(() => form.username.trim().length >= 4 && PASSWORD_PATTERN.test(form.password), [form.password, form.username])
+  const canVerifyMfa = useMemo(() => /^\d{6}$/.test(mfaCode), [mfaCode])
+  const canInitiateMfaSetup = useMemo(() => mfaSetupForm.currentPassword.length > 0, [mfaSetupForm.currentPassword])
+  const canConfirmMfaSetup = useMemo(
+    () => mfaSetupSecret && /^\d{6}$/.test(mfaSetupForm.code),
+    [mfaSetupForm.code, mfaSetupSecret],
+  )
   const canSendReset = true
 
   useEffect(() => {
@@ -927,6 +977,17 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
         const response = await refreshAccessToken(locale)
         if (!cancelled && response?.accessToken) {
           setAccessToken(response.accessToken)
+          const verified = Boolean(response.mfaVerified)
+          setMfaVerified(verified)
+          if (!verified) {
+            const mfaStatus = await getMfaStatus(response.accessToken, locale)
+            if (cancelled) {
+              return
+            }
+            if (!mfaStatus) {
+              // keep pre-auth screen until setup endpoint is used
+            }
+          }
         }
       } catch {
         // Refresh cookie may be missing or expired; keep login view.
@@ -974,6 +1035,8 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
     setIsBusy(true)
     setAuthError('')
     setAuthInfo('')
+    setMfaSetupSecret(null)
+    setMfaSetupForm({ currentPassword: '', code: '' })
     try {
       const response = await login(
         {
@@ -982,8 +1045,123 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
         },
         locale,
       )
+      if (response?.requiresMfa) {
+        setMfaChallenge({
+          required: true,
+          token: response.mfaChallengeToken || '',
+          expiresIn: Number(response.mfaChallengeExpiresIn || 0),
+          username: response.username || form.username.trim(),
+        })
+        setMfaCode('')
+        setForgotMode(false)
+        return
+      }
+
+      if (response?.accessToken) {
+        setAccessToken(response.accessToken)
+        setMfaVerified(Boolean(response.mfaVerified))
+        setMfaChallenge({ required: false, token: '', expiresIn: 0, username: '' })
+        setForgotMode(false)
+        setActiveSection(copy.nav[0][0])
+      } else {
+        setAuthError(locale === 'tr' ? 'Giriş yanıtı geçersiz.' : 'Login response is invalid.')
+      }
+    } catch (error) {
+      setAuthError(error.message)
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  const handleVerifyMfa = async (event) => {
+    event.preventDefault()
+    if (!canVerifyMfa || !mfaChallenge.token) {
+      return
+    }
+
+    setIsBusy(true)
+    setAuthError('')
+    setAuthInfo('')
+    try {
+      const response = await loginMfa(
+        {
+          challengeToken: mfaChallenge.token,
+          code: mfaCode,
+        },
+        locale,
+      )
+      if (!response?.accessToken) {
+        throw new Error(locale === 'tr' ? 'MFA doğrulama başarısız.' : 'MFA verification failed.')
+      }
       setAccessToken(response.accessToken)
-      setForgotMode(false)
+      setMfaVerified(Boolean(response.mfaVerified))
+      setMfaChallenge({ required: false, token: '', expiresIn: 0, username: '' })
+      setMfaCode('')
+      setForm((current) => ({ ...current, password: '' }))
+      setActiveSection(copy.nav[0][0])
+    } catch (error) {
+      setAuthError(error.message)
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  const handleBackFromMfa = () => {
+    setMfaChallenge({ required: false, token: '', expiresIn: 0, username: '' })
+    setMfaCode('')
+    setAuthError('')
+  }
+
+  const handleMfaSetupFieldChange = (field) => (event) => {
+    const nextValue = field === 'code'
+      ? event.target.value.replace(/\D/g, '').slice(0, 6)
+      : event.target.value
+    setMfaSetupForm((current) => ({ ...current, [field]: nextValue }))
+  }
+
+  const handleInitiateMfaSetup = async (event) => {
+    event.preventDefault()
+    if (!accessToken || !canInitiateMfaSetup) {
+      return
+    }
+    setIsBusy(true)
+    setAuthError('')
+    setAuthInfo('')
+    try {
+      const response = await initiateMfaSetup(
+        accessToken,
+        { currentPassword: mfaSetupForm.currentPassword },
+        locale,
+      )
+      setMfaSetupSecret(response)
+      setAuthInfo(locale === 'tr' ? 'Doğrulama uygulamasına secret ekleyip kodu gir.' : 'Add this secret to your authenticator app, then enter one code.')
+    } catch (error) {
+      setAuthError(error.message)
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  const handleConfirmMfaSetup = async (event) => {
+    event.preventDefault()
+    if (!accessToken || !canConfirmMfaSetup) {
+      return
+    }
+
+    setIsBusy(true)
+    setAuthError('')
+    setAuthInfo('')
+    try {
+      const response = await confirmMfaSetup(
+        accessToken,
+        { code: mfaSetupForm.code },
+        locale,
+      )
+      setAccessToken(response.accessToken)
+      setMfaVerified(Boolean(response.mfaVerified))
+      setMfaSetupSecret(null)
+      setMfaSetupForm({ currentPassword: '', code: '' })
+      setAuthInfo(copy.mfaSetupDone)
       setActiveSection(copy.nav[0][0])
     } catch (error) {
       setAuthError(error.message)
@@ -1104,6 +1282,10 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
           const refreshed = await refreshAccessToken(locale)
           if (refreshed?.accessToken) {
             setAccessToken(refreshed.accessToken)
+            setMfaVerified(Boolean(refreshed.mfaVerified))
+            if (!refreshed.mfaVerified) {
+              await getMfaStatus(refreshed.accessToken, locale)
+            }
             return
           }
         } catch {
@@ -1132,6 +1314,11 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
       // Ignore logout errors in UI; local auth state is still cleared.
     } finally {
       setAccessToken('')
+      setMfaVerified(false)
+      setMfaChallenge({ required: false, token: '', expiresIn: 0, username: '' })
+      setMfaCode('')
+      setMfaSetupForm({ currentPassword: '', code: '' })
+      setMfaSetupSecret(null)
       setForm({ username: '', password: '' })
       setActiveSection(copy.nav[0][0])
       setAuthError('')
@@ -2356,8 +2543,99 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
             <div className="space-y-4"><h1 className="text-5xl font-semibold tracking-tight text-white md:text-6xl">{copy.adminLogin}</h1><p className="max-w-xl text-base leading-8 text-slate-300 md:text-lg">{copy.description}</p></div>
           </section>
           <section className="glass-card rounded-[2rem] p-6 md:p-8">
-            <p className="text-xs uppercase tracking-[0.34em] text-slate-500">{forgotMode ? copy.passwordReset : copy.adminLogin}</p>
-            {forgotMode ? (
+            <p className="text-xs uppercase tracking-[0.34em] text-slate-500">
+              {hasSession && !mfaVerified
+                ? copy.mfaSetupTitle
+                : mfaChallenge.required
+                  ? copy.mfaVerify
+                  : forgotMode
+                    ? copy.passwordReset
+                    : copy.adminLogin}
+            </p>
+            {hasSession && !mfaVerified ? (
+              <div className="mt-6 space-y-5">
+                <p className="text-sm leading-7 text-slate-400">{copy.mfaSetupHint}</p>
+                <label className="block space-y-1.5">
+                  <span className="relative -top-1 pl-3 text-sm text-slate-300">{copy.mfaCurrentPassword}</span>
+                  <input
+                    type="password"
+                    value={mfaSetupForm.currentPassword}
+                    onChange={handleMfaSetupFieldChange('currentPassword')}
+                    autoComplete="current-password"
+                    className="password-field w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm text-white outline-none"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={handleInitiateMfaSetup}
+                  disabled={!canInitiateMfaSetup || isBusy}
+                  className="button-primary w-full rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-55"
+                >
+                  {isBusy ? '...' : copy.mfaInitiate}
+                </button>
+                {mfaSetupSecret ? (
+                  <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{copy.mfaSetupSecret}</p>
+                      <p className="mt-2 break-all text-sm text-slate-100">{mfaSetupSecret.secret}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{copy.mfaSetupUri}</p>
+                      <p className="mt-2 break-all text-xs text-slate-300">{mfaSetupSecret.otpauthUri}</p>
+                    </div>
+                    <label className="block space-y-1.5">
+                      <span className="relative -top-1 pl-3 text-sm text-slate-300">{copy.mfaSetupCodeLabel}</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="\\d*"
+                        maxLength={6}
+                        value={mfaSetupForm.code}
+                        onChange={handleMfaSetupFieldChange('code')}
+                        className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm tracking-[0.25em] text-white outline-none"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleConfirmMfaSetup}
+                      disabled={!canConfirmMfaSetup || isBusy}
+                      className="button-primary w-full rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-55"
+                    >
+                      {isBusy ? '...' : copy.mfaConfirm}
+                    </button>
+                  </div>
+                ) : null}
+                {authError ? <p className="text-sm text-rose-300">{authError}</p> : null}
+                {authInfo ? <p className="text-sm text-emerald-300">{authInfo}</p> : null}
+                <button type="button" onClick={handleLogout} className="w-full rounded-full border border-white/10 bg-white/6 px-6 py-3 text-sm text-slate-200">
+                  {copy.logout}
+                </button>
+              </div>
+            ) : mfaChallenge.required ? (
+              <form className="mt-6 space-y-5" onSubmit={handleVerifyMfa}>
+                <p className="text-sm leading-7 text-slate-400">{copy.mfaRequiredHint}</p>
+                <label className="block space-y-1.5">
+                  <span className="relative -top-1 pl-3 text-sm text-slate-300">{copy.mfaCodeLabel}</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="\\d*"
+                    maxLength={6}
+                    value={mfaCode}
+                    onChange={(event) => setMfaCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm tracking-[0.25em] text-white outline-none"
+                  />
+                </label>
+                {authError ? <p className="text-sm text-rose-300">{authError}</p> : null}
+                {authInfo ? <p className="text-sm text-emerald-300">{authInfo}</p> : null}
+                <button type="submit" disabled={!canVerifyMfa || isBusy} className="button-primary w-full rounded-full px-6 py-3 text-sm font-semibold disabled:opacity-55">
+                  {isBusy ? '...' : copy.mfaVerify}
+                </button>
+                <button type="button" onClick={handleBackFromMfa} className="w-full rounded-full border border-white/10 bg-white/6 px-6 py-3 text-sm text-slate-200">
+                  {copy.mfaBack}
+                </button>
+              </form>
+            ) : forgotMode ? (
               <form className="mt-6 space-y-5" onSubmit={handleForgotPassword}>
                 <p className="text-sm leading-7 text-slate-400">{copy.resetHint}</p>
                 {authError ? <p className="text-sm text-rose-300">{authError}</p> : null}

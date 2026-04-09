@@ -4,7 +4,7 @@ Frontend application for `fatihozkurt.com`.
 
 This project includes:
 - Public one-page portfolio surface
-- Hidden admin panel UI (configurable route)
+- Hidden admin panel UI (`/auth`)
 - Responsive layouts for desktop/tablet/mobile
 - API-driven content rendering from backend
 - Rich project cards, modal details, pagination, and media gallery behavior
@@ -26,7 +26,7 @@ This project includes:
 - Project detail modal with gallery slider support
 - Contact form with backend submit flow
 - Hidden admin route:
-  - `/auth` (default)
+  - `/auth`
   - content CRUD orchestration
   - file upload driven flows (resume/images/icons)
 
@@ -35,7 +35,6 @@ This project includes:
 Optional env:
 
 - `VITE_API_BASE_URL`
-- `VITE_ADMIN_PATH` (default: `/auth`)
 
 If empty, frontend falls back to current origin.
 
@@ -75,8 +74,8 @@ Health endpoint:
 ## Routes
 
 - Public: `/`
-- Auth UI: `VITE_ADMIN_PATH` (default `/auth`)
-- Reset password UI: `${VITE_ADMIN_PATH}/reset-password?token=...`
+- Auth UI: `/auth`
+- Reset password UI: `/auth/reset-password?token=...`
 
 ## Notes for Production
 

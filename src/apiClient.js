@@ -149,6 +149,18 @@ export async function login(payload, locale) {
   })
 }
 
+export async function loginMfa(payload, locale) {
+  return request('/api/v1/auth/login/mfa', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...localeHeaders(locale),
+    },
+    body: JSON.stringify(payload),
+  })
+}
+
 export async function refreshAccessToken(locale) {
   return request('/api/v1/auth/refresh', {
     method: 'POST',
@@ -205,6 +217,42 @@ export async function updateCredentials(payload, accessToken, locale) {
     headers,
     body: JSON.stringify(payload),
   })
+}
+
+async function authMutationWithCsrf(path, payload, accessToken, locale) {
+  const csrf = await getCsrf(locale)
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+    ...localeHeaders(locale),
+  }
+  if (csrf?.headerName && csrf?.token) {
+    headers[csrf.headerName] = csrf.token
+  }
+  return request(path, {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function getMfaStatus(accessToken, locale) {
+  return request('/api/v1/auth/mfa/status', {
+    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      ...localeHeaders(locale),
+    },
+  })
+}
+
+export async function initiateMfaSetup(accessToken, payload, locale) {
+  return authMutationWithCsrf('/api/v1/auth/mfa/setup/initiate', payload, accessToken, locale)
+}
+
+export async function confirmMfaSetup(accessToken, payload, locale) {
+  return authMutationWithCsrf('/api/v1/auth/mfa/setup/confirm', payload, accessToken, locale)
 }
 
 export async function getCsrf(locale) {
