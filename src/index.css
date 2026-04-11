@@ -427,7 +427,9 @@ button:disabled {
   .character-home {
     --character-fluid-size: 15.5vw;
     --character-max-size: 9rem;
-    right: clamp(-1.2rem, -2.4vw, -0.6rem);
+    --anchor-y: 80%;
+    --character-nudge-y: -2%;
+    right: clamp(-0.85rem, -2vw, -0.35rem);
   }
 
   .character-about {
@@ -515,6 +517,7 @@ button:disabled {
     width: 100%;
     border-radius: 1.55rem;
     padding: 1.08rem 0.92rem 1.05rem;
+    overflow: visible;
     box-shadow:
       0 20px 58px rgba(2, 6, 23, 0.38),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -522,8 +525,9 @@ button:disabled {
 
   .public-site-shell .hero-title {
     max-width: none;
-    font-size: clamp(2.55rem, 15.6vw, 3.65rem);
-    line-height: 0.9;
+    font-size: clamp(2.42rem, 14.9vw, 3.38rem);
+    line-height: 0.94;
+    letter-spacing: -0.015em;
   }
 
   .public-site-shell .hero-subtitle {
@@ -557,7 +561,7 @@ button:disabled {
     gap: 0.65rem;
   }
 
-  .public-site-shell .section-heading > p {
+  .public-site-shell .section-heading > p:first-child {
     font-size: 0.54rem;
     letter-spacing: 0.3em;
   }
@@ -569,6 +573,7 @@ button:disabled {
 
   .public-site-shell .section-heading > p:last-child {
     font-size: 0.9rem;
+    letter-spacing: normal;
     line-height: 1.58;
   }
 
@@ -611,11 +616,14 @@ button:disabled {
   .public-site-shell .about-tech-shell {
     margin-top: 1rem;
     border-radius: 1.2rem;
-    padding-block: 0.9rem;
+    overflow: visible;
+    padding-top: 1.2rem;
+    padding-bottom: 0.9rem;
   }
 
   .public-site-shell .about-tech-rail {
     padding-inline: 0.72rem;
+    padding-right: 4.2rem;
   }
 
   .public-site-shell .tech-pill {
@@ -774,7 +782,9 @@ button:disabled {
   .public-site-shell .contact-form-card {
     width: 100%;
     border-radius: 1.2rem;
+    overflow: visible;
     padding: 0.92rem;
+    padding-top: 1.22rem;
   }
 
   .public-site-shell .contact-form-grid {
@@ -802,27 +812,70 @@ button:disabled {
     line-height: 1.5;
   }
 
-  .character-about {
-    display: none;
+  .character-home {
+    --character-min-size: 4.1rem;
+    --character-fluid-size: 24vw;
+    --character-max-size: 5.45rem;
+    --anchor-y: 86%;
+    --character-nudge-y: -2%;
+    right: clamp(0.12rem, 1.6vw, 0.42rem);
+    top: -0.15rem;
   }
 
-  .character-home {
-    --character-fluid-size: 22vw;
-    --character-max-size: 5.8rem;
-    --anchor-y: 50%;
-    --character-nudge-y: -4%;
-    right: clamp(-0.2rem, -0.8vw, 0rem);
+  .character-about {
+    display: block;
+    --character-min-size: 3.6rem;
+    --character-fluid-size: 17vw;
+    --character-max-size: 4.6rem;
+    --anchor-y: 84%;
+    --character-nudge-y: -5%;
+    left: auto;
+    right: 0.58rem;
+    top: 0;
+    z-index: 14;
   }
 
   .character-resume {
-    --character-fluid-size: 18vw;
-    --character-max-size: 4.8rem;
-    --anchor-y: 66%;
-    right: clamp(-0.2rem, -0.8vw, 0rem);
+    --character-min-size: 3.4rem;
+    --character-fluid-size: 16vw;
+    --character-max-size: 4.4rem;
+    --anchor-y: 78%;
+    --character-nudge-y: -3%;
+    right: 0.3rem;
+    top: 0;
   }
 
   .character-contact {
-    display: none;
+    display: block;
+    --character-min-size: 3.7rem;
+    --character-fluid-size: 18vw;
+    --character-max-size: 4.9rem;
+    --anchor-y: 80%;
+    --character-nudge-y: -2%;
+    right: 0.68rem;
+    top: 0;
+    z-index: 14;
+  }
+}
+
+@media (max-width: 380px) {
+  .public-site-shell .hero-badge {
+    max-width: min(100%, 17.8rem);
+    letter-spacing: 0.22em;
+  }
+
+  .public-site-shell .hero-title {
+    font-size: clamp(2.18rem, 13.8vw, 2.92rem);
+    line-height: 0.97;
+  }
+
+  .public-site-shell .hero-subtitle {
+    font-size: 0.74rem;
+    letter-spacing: 0.16em;
+  }
+
+  .public-site-shell .hero-description {
+    font-size: 0.84rem;
   }
 }
 

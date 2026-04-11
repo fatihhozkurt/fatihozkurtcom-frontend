@@ -2,9 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="icon" type="image/png" href="/brand-fo-icon.png?v=20260406" />
     <link rel="apple-touch-icon" href="/brand-fo-icon.png?v=20260406" />
     <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="canonical" href="https://fatihozkurt.com/" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
@@ -12,7 +15,12 @@
       content="Java backend developer portfolio with selected projects, writings, resume preview, and a security-minded product surface."
     />
     <meta name="author" content="Fatih Özkurt" />
+    <meta name="application-name" content="Fatih Ozkurt Portfolio" />
     <meta name="theme-color" content="#070910" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Fatih Ozkurt" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="robots" content="index,follow" />
     <meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
     <meta property="og:type" content="website" />
@@ -26,6 +34,7 @@
     <meta property="og:locale" content="en_US" />
     <meta property="og:locale:alternate" content="tr_TR" />
     <meta property="og:image" content="https://fatihozkurt.com/og-image.svg" />
+    <meta property="og:image:alt" content="Fatih Ozkurt backend portfolio preview" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Fatih Özkurt | Java Backend Developer" />
     <meta
@@ -46,7 +55,23 @@
             "@id": "https://fatihozkurt.com/#website",
             "url": "https://fatihozkurt.com/",
             "name": "Fatih Özkurt",
-            "description": "Java backend developer portfolio with selected projects, writings, resume preview, and a security-minded product surface."
+            "description": "Java backend developer portfolio with selected projects, writings, resume preview, and a security-minded product surface.",
+            "inLanguage": ["en-US", "tr-TR"],
+            "publisher": { "@id": "https://fatihozkurt.com/#person" },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://fatihozkurt.com/?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "ProfilePage",
+            "@id": "https://fatihozkurt.com/#profile",
+            "url": "https://fatihozkurt.com/",
+            "name": "Fatih Özkurt | Java Backend Developer",
+            "isPartOf": { "@id": "https://fatihozkurt.com/#website" },
+            "about": { "@id": "https://fatihozkurt.com/#person" },
+            "inLanguage": ["en-US", "tr-TR"]
           },
           {
             "@type": "Person",
@@ -55,9 +80,10 @@
             "alternateName": "Fatih Ozkurt",
             "jobTitle": "Java Backend Developer",
             "url": "https://fatihozkurt.com/",
+            "image": "https://fatihozkurt.com/og-image.svg",
             "sameAs": [
-              "https://www.linkedin.com/in/fatihozkurt/",
-              "https://github.com/fatihozkurt",
+              "https://www.linkedin.com/in/fatih-%C3%B6zkurt-93748321a/",
+              "https://github.com/fatihhozkurt",
               "https://medium.com/@fatihozkurt"
             ]
           }

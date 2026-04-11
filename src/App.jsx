@@ -1661,9 +1661,11 @@ function App() {
       ? `https://fatihozkurt.com${ADMIN_RESET_ROUTE}`
       : (isAuthPage ? `https://fatihozkurt.com${ADMIN_ROUTE}` : 'https://fatihozkurt.com/')
     const ogImage = 'https://fatihozkurt.com/og-image.svg'
+    const siteName = 'Fatih Ozkurt'
+    const personName = 'Fatih Özkurt'
     const keywords = locale === 'tr'
-      ? 'Fatih Özkurt, Fatih Ozkurt, fatihozkurt, java backend developer, spring boot, backend engineer, istanbul yazılım'
-      : 'Fatih Ozkurt, Fatih Özkurt, fatihozkurt, java backend developer, spring boot, backend engineer, software architect'
+      ? 'Fatih Özkurt, Fatih Ozkurt, fatihozkurt, Java backend developer, Spring Boot, backend mühendisi, yazılım mimarisi, PostgreSQL, Redis, Kafka, İstanbul'
+      : 'Fatih Ozkurt, Fatih Özkurt, fatihozkurt, Java backend developer, Spring Boot, backend engineer, software architecture, PostgreSQL, Redis, Kafka'
 
     document.title = title
 
@@ -1682,9 +1684,21 @@ function App() {
       identity: { name: 'description' },
       content: description,
     })
+    upsertMeta('meta[name="author"]', {
+      identity: { name: 'author' },
+      content: siteName,
+    })
     upsertMeta('meta[name="robots"]', {
       identity: { name: 'robots' },
       content: isAuthPage ? 'noindex,nofollow,noarchive,nosnippet' : 'index,follow',
+    })
+    upsertMeta('meta[name="googlebot"]', {
+      identity: { name: 'googlebot' },
+      content: isAuthPage ? 'noindex,nofollow,noarchive,nosnippet' : 'index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1',
+    })
+    upsertMeta('meta[name="application-name"]', {
+      identity: { name: 'application-name' },
+      content: 'Fatih Ozkurt Portfolio',
     })
     upsertMeta('meta[name="keywords"]', {
       identity: { name: 'keywords' },
@@ -1696,7 +1710,11 @@ function App() {
     })
     upsertMeta('meta[property="og:type"]', {
       identity: { property: 'og:type' },
-      content: isAuthPage ? 'website' : 'profile',
+      content: 'website',
+    })
+    upsertMeta('meta[property="og:site_name"]', {
+      identity: { property: 'og:site_name' },
+      content: siteName,
     })
     upsertMeta('meta[property="og:description"]', {
       identity: { property: 'og:description' },
@@ -1716,7 +1734,7 @@ function App() {
     })
     upsertMeta('meta[property="og:image:alt"]', {
       identity: { property: 'og:image:alt' },
-      content: 'Fatih Özkurt backend portfolio preview',
+      content: 'Fatih Ozkurt backend portfolio preview',
     })
     upsertMeta('meta[name="twitter:card"]', {
       identity: { name: 'twitter:card' },
@@ -1733,6 +1751,10 @@ function App() {
     upsertMeta('meta[name="twitter:image"]', {
       identity: { name: 'twitter:image' },
       content: ogImage,
+    })
+    upsertMeta('meta[name="twitter:site"]', {
+      identity: { name: 'twitter:site' },
+      content: '@fatihozkurt',
     })
     let canonicalNode = document.head.querySelector('link[rel="canonical"]')
     if (!canonicalNode) {
@@ -1757,28 +1779,56 @@ function App() {
     if (!isAuthPage) {
       const jsonLd = {
         '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: 'Fatih Özkurt',
-        alternateName: 'Fatih Ozkurt',
-        jobTitle: 'Java Backend Developer',
-        url: 'https://fatihozkurt.com/',
-        image: 'https://fatihozkurt.com/og-image.svg',
-        sameAs: [
-          'https://github.com/fatihhozkurt',
-          'https://www.linkedin.com/in/fatih-%C3%B6zkurt-93748321a/',
-          'https://medium.com/@fatihozkurt',
+        '@graph': [
+          {
+            '@type': 'WebSite',
+            '@id': 'https://fatihozkurt.com/#website',
+            url: 'https://fatihozkurt.com/',
+            name: siteName,
+            description,
+            inLanguage: ['en-US', 'tr-TR'],
+            publisher: { '@id': 'https://fatihozkurt.com/#person' },
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: 'https://fatihozkurt.com/?q={search_term_string}',
+              'query-input': 'required name=search_term_string',
+            },
+          },
+          {
+            '@type': 'ProfilePage',
+            '@id': 'https://fatihozkurt.com/#profile',
+            url: 'https://fatihozkurt.com/',
+            name: `${personName} | Java Backend Developer`,
+            isPartOf: { '@id': 'https://fatihozkurt.com/#website' },
+            about: { '@id': 'https://fatihozkurt.com/#person' },
+            inLanguage: ['en-US', 'tr-TR'],
+          },
+          {
+            '@type': 'Person',
+            '@id': 'https://fatihozkurt.com/#person',
+            name: personName,
+            alternateName: 'Fatih Ozkurt',
+            jobTitle: 'Java Backend Developer',
+            url: 'https://fatihozkurt.com/',
+            image: ogImage,
+            sameAs: [
+              'https://github.com/fatihhozkurt',
+              'https://www.linkedin.com/in/fatih-%C3%B6zkurt-93748321a/',
+              'https://medium.com/@fatihozkurt',
+            ],
+          },
         ],
       }
-      let schemaNode = document.head.querySelector('script[data-schema="person"]')
+      let schemaNode = document.head.querySelector('script[data-schema="profile"]')
       if (!schemaNode) {
         schemaNode = document.createElement('script')
         schemaNode.setAttribute('type', 'application/ld+json')
-        schemaNode.setAttribute('data-schema', 'person')
+        schemaNode.setAttribute('data-schema', 'profile')
         document.head.appendChild(schemaNode)
       }
       schemaNode.textContent = JSON.stringify(jsonLd)
     } else {
-      const schemaNode = document.head.querySelector('script[data-schema="person"]')
+      const schemaNode = document.head.querySelector('script[data-schema="profile"]')
       if (schemaNode) {
         schemaNode.remove()
       }
