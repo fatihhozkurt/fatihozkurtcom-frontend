@@ -1246,7 +1246,6 @@ function PublicSite({ locale, setLocale }) {
 
         <Section id="projects" className="projects-section pt-14 sm:pt-20 lg:pt-28">
           <div className="projects-content relative z-10 space-y-10">
-            <CharacterSticker src="/avatars/projects-chair-laptop.png" className="character-ghost-faint character-sticker character-projects" />
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={resolveSectionHeading('projects', text.sections.projects).eyebrow}
@@ -1404,7 +1403,6 @@ function PublicSite({ locale, setLocale }) {
 
         <Section id="writings" className="writings-section pt-14 sm:pt-20 lg:pt-28">
           <div className="writings-content relative z-10 space-y-10">
-            <CharacterSticker src="/avatars/writings-music.png" className="character-ghost-faint character-sticker character-writings" />
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={resolveSectionHeading('writings', text.sections.writings).eyebrow}
