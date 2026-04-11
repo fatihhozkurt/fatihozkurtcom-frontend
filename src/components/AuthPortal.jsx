@@ -2152,9 +2152,9 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
 
   if (authenticated) {
     return (
-      <div className="site-shell min-h-screen bg-obsidian text-slate-100">
-        <div className="mx-auto max-w-7xl px-4 py-6 md:px-8">
-          <header data-admin-header className="glass-card sticky top-4 z-40 rounded-[2rem] px-5 py-4 md:px-6">
+      <div className="site-shell auth-shell admin-shell min-h-screen bg-obsidian text-slate-100">
+        <div className="admin-shell-wrap mx-auto max-w-7xl px-4 py-6 md:px-8">
+          <header data-admin-header className="admin-shell-header glass-card sticky top-4 z-40 rounded-[2rem] px-5 py-4 md:px-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div><p className="text-xs uppercase tracking-[0.34em] text-slate-500">{copy.hiddenWorkspace}</p><h1 className="mt-2 text-2xl font-semibold text-white md:text-3xl">{copy.adminSurface}</h1></div>
               <div className="flex flex-wrap items-center gap-3">
@@ -2561,14 +2561,14 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
   }
 
   return (
-    <div className="site-shell min-h-screen bg-obsidian text-slate-100">
-      <div className="mx-auto flex min-h-screen max-w-5xl items-center px-4 py-12 md:px-8">
-        <div className="grid w-full gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <section className="space-y-6">
+    <div className="site-shell auth-shell min-h-screen bg-obsidian text-slate-100">
+      <div className="auth-login-wrap mx-auto flex min-h-screen max-w-5xl items-center px-4 py-12 md:px-8">
+        <div className="auth-login-grid grid w-full gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <section className="auth-brand-pane space-y-6">
             <div className="flex items-center justify-between gap-4"><div className="inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100"><LockKeyhole size={14} />{copy.hiddenAccess}</div><LanguageSwitch locale={locale} setLocale={setLocale} labels={langLabels} /></div>
             <div className="space-y-4"><h1 className="text-5xl font-semibold tracking-tight text-white md:text-6xl">{copy.adminLogin}</h1><p className="max-w-xl text-base leading-8 text-slate-300 md:text-lg">{copy.description}</p></div>
           </section>
-          <section className="glass-card rounded-[2rem] p-6 md:p-8">
+          <section className="auth-form-pane glass-card rounded-[2rem] p-6 md:p-8">
             <p className="text-xs uppercase tracking-[0.34em] text-slate-500">
               {hasSession && !mfaVerified
                 ? copy.mfaSetupTitle

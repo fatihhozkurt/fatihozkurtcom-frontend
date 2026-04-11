@@ -1050,7 +1050,7 @@ function PublicSite({ locale, setLocale }) {
   }
 
   return (
-    <div className="site-shell min-h-screen bg-obsidian text-slate-100">
+    <div className="site-shell public-site-shell min-h-screen bg-obsidian text-slate-100">
       <BackgroundEffects />
       <a
         href="#main-content"
@@ -1058,7 +1058,7 @@ function PublicSite({ locale, setLocale }) {
       >
         {text.accessibility.skipToContent}
       </a>
-      <header className="intro-fade sticky top-0 z-50 border-b border-white/10 bg-[rgba(8,10,18,0.7)] backdrop-blur-xl">
+      <header className="intro-fade site-header sticky top-0 z-50 border-b border-white/10 bg-[rgba(8,10,18,0.7)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:gap-4 md:px-8 md:py-4">
           <SectionLink href="#home" onNavigate={() => scrollToSection('home')} className="flex items-center gap-3 text-left">
             <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl border border-sky-400/30 bg-white/5 p-[2px] md:h-11 md:w-11">
@@ -1129,13 +1129,13 @@ function PublicSite({ locale, setLocale }) {
         ) : null}
       </header>
 
-      <main id="main-content" className="relative z-10">
-        <Section id="home" className="overflow-hidden pt-20 sm:pt-24 lg:pt-32">
+      <main id="main-content" className="site-main relative z-10">
+        <Section id="home" className="home-section overflow-hidden pt-12 sm:pt-24 lg:pt-32">
           <div className="relative">
-            <div className="mx-auto flex min-h-[31rem] w-full max-w-6xl flex-col items-center justify-start pt-6 text-center sm:min-h-[35rem] sm:pt-8 lg:min-h-[calc(100vh-10rem)] lg:pt-2">
+            <div className="hero-stage mx-auto flex min-h-[26rem] w-full max-w-6xl flex-col items-center justify-start pt-4 text-center sm:min-h-[35rem] sm:pt-8 lg:min-h-[calc(100vh-10rem)] lg:pt-2">
               <div
                 data-reveal
-                className="reveal relative z-10 inline-flex max-w-[min(100%,21rem)] items-center justify-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-300/10 px-3.5 py-2 text-center text-[10px] uppercase leading-5 tracking-[0.24em] text-orange-100 sm:max-w-none sm:gap-2 sm:px-4 sm:text-xs sm:tracking-[0.3em]"
+                className="hero-badge reveal relative z-10 inline-flex max-w-[min(100%,21rem)] items-center justify-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-300/10 px-3.5 py-2 text-center text-[10px] uppercase leading-5 tracking-[0.24em] text-orange-100 sm:max-w-none sm:gap-2 sm:px-4 sm:text-xs sm:tracking-[0.3em]"
                 style={{ '--reveal-delay': '120ms' }}
               >
                 <Sparkles size={14} />
@@ -1145,29 +1145,29 @@ function PublicSite({ locale, setLocale }) {
               </div>
               <div
                 data-reveal
-                className="reveal relative mt-6 rounded-[2.1rem] border border-white/8 bg-white/[0.025] px-5 py-8 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] sm:mt-8 sm:px-7 sm:py-9 lg:rounded-[2.5rem] lg:px-12 lg:py-14"
+                className="hero-panel reveal relative mt-6 rounded-[2.1rem] border border-white/8 bg-white/[0.025] px-5 py-8 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] sm:mt-8 sm:px-7 sm:py-9 lg:rounded-[2.5rem] lg:px-12 lg:py-14"
                 style={{ '--reveal-delay': '220ms' }}
               >
                 <CharacterSticker src="/avatars/home-laptop.png" className="character-ghost character-sticker character-home" />
-                <h1 className="mx-auto max-w-[18rem] font-display text-[3.85rem] font-semibold leading-[0.88] tracking-tight text-white sm:max-w-4xl sm:text-[5rem] lg:max-w-5xl lg:text-[7.5rem] lg:leading-[0.88]">
+                <h1 className="hero-title mx-auto max-w-[18rem] font-display text-[3.85rem] font-semibold leading-[0.88] tracking-tight text-white sm:max-w-4xl sm:text-[5rem] lg:max-w-5xl lg:text-[7.5rem] lg:leading-[0.88]">
                   {resolvedHeroContent?.fullName || text.hero.name}
                 </h1>
-                <p className="mt-3 text-[1.02rem] font-medium uppercase tracking-[0.14em] text-sky-200/72 sm:text-[1.28rem] lg:mt-2 lg:text-[1.7rem] lg:tracking-[0.16em]">
+                <p className="hero-subtitle mt-3 text-[1.02rem] font-medium uppercase tracking-[0.14em] text-sky-200/72 sm:text-[1.28rem] lg:mt-2 lg:text-[1.7rem] lg:tracking-[0.16em]">
                   {resolvedHeroContent?.title || text.hero.title}
                 </p>
-                <p className="mx-auto max-w-[18.5rem] pt-5 text-[0.98rem] leading-7 text-slate-300 sm:max-w-2xl sm:pt-6 sm:text-base lg:max-w-3xl lg:text-lg">
+                <p className="hero-description mx-auto max-w-[18.5rem] pt-5 text-[0.98rem] leading-7 text-slate-300 sm:max-w-2xl sm:pt-6 sm:text-base lg:max-w-3xl lg:text-lg">
                   {resolvedHeroContent?.description || text.hero.description}
                 </p>
               </div>
               <div
                 data-reveal
-                className="reveal mt-5 flex flex-wrap items-center justify-center gap-3 sm:mt-6"
+                className="hero-actions reveal mt-5 flex flex-wrap items-center justify-center gap-3 sm:mt-6"
                 style={{ '--reveal-delay': '320ms' }}
               >
                 <SectionLink
                   href="#about"
                   onNavigate={() => scrollToSection('about')}
-                  className="button-primary inline-flex items-center rounded-full px-6 py-3 text-sm font-semibold sm:px-7"
+                  className="hero-cta button-primary inline-flex items-center rounded-full px-6 py-3 text-sm font-semibold sm:px-7"
                 >
                   {resolvedHeroContent?.ctaLabel || text.hero.explore}
                   <ArrowUpRight size={16} className="ml-2" />
@@ -1177,8 +1177,8 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="about" className="pt-16 sm:pt-20 lg:pt-28">
-          <div className="relative z-10 grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:gap-10">
+        <Section id="about" className="about-section pt-14 sm:pt-20 lg:pt-28">
+          <div className="about-grid relative z-10 grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:gap-10">
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={resolvedAboutContent?.eyebrow || text.sections.about.eyebrow}
@@ -1186,7 +1186,7 @@ function PublicSite({ locale, setLocale }) {
                 description={resolvedAboutContent?.description || text.sections.about.description}
               />
             </div>
-            <div className="relative grid gap-4 md:grid-cols-2 md:[grid-auto-rows:1fr]">
+            <div className="about-cards relative grid gap-4 md:grid-cols-2 md:[grid-auto-rows:1fr]">
               <div data-reveal className="reveal h-full" style={{ '--reveal-delay': '40ms' }}>
                 <InfoCard
                   icon={ShieldCheck}
@@ -1217,11 +1217,11 @@ function PublicSite({ locale, setLocale }) {
               </div>
             </div>
           </div>
-          <div data-reveal className="reveal relative mt-10 rounded-[2rem] border border-white/10 bg-white/[0.04] py-5 sm:mt-12" style={{ '--reveal-delay': '120ms' }}>
+          <div data-reveal className="about-tech-shell reveal relative mt-8 rounded-[2rem] border border-white/10 bg-white/[0.04] py-5 sm:mt-12" style={{ '--reveal-delay': '120ms' }}>
             <CharacterSticker src="/avatars/about-knight.png" className="character-ghost-faint character-sticker character-about" />
             <div
               ref={techScrollerRef}
-              className={`marquee-shell hide-scrollbar overflow-x-auto px-4 select-none touch-pan-y ${techPaused ? 'is-paused' : ''} ${techDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+              className={`about-tech-rail marquee-shell hide-scrollbar overflow-x-auto px-4 select-none touch-pan-y ${techPaused ? 'is-paused' : ''} ${techDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
               onWheel={handleTechWheel}
               onPointerDown={handleTechPointerDown}
               onPointerMove={handleTechPointerMove}
@@ -1244,8 +1244,9 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="projects" className="pt-16 sm:pt-20 lg:pt-28">
-          <div className="relative z-10 space-y-10">
+        <Section id="projects" className="projects-section pt-14 sm:pt-20 lg:pt-28">
+          <div className="projects-content relative z-10 space-y-10">
+            <CharacterSticker src="/avatars/projects-chair-laptop.png" className="character-ghost-faint character-sticker character-projects" />
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={resolveSectionHeading('projects', text.sections.projects).eyebrow}
@@ -1259,7 +1260,7 @@ function PublicSite({ locale, setLocale }) {
               </div>
             ) : (
               <>
-                <div className="projects-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 md:grid-cols-2 xl:grid-cols-3">
+                <div className="projects-rail projects-grid hide-scrollbar -mx-1 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 md:grid-cols-2 xl:grid-cols-3">
                   {visibleProjects.map((project, index) => (
                     <div key={project.id} data-reveal className={`projects-rail-item reveal ${index === 0 ? 'relative' : ''}`} style={{ '--reveal-delay': `${60 + index * 90}ms` }}>
                       <article
@@ -1272,7 +1273,7 @@ function PublicSite({ locale, setLocale }) {
                             openProject(project.id)
                           }
                         }}
-                        className="surface-card relative flex min-h-full cursor-pointer overflow-visible rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-4 transition hover:-translate-y-1 hover:border-sky-300/25"
+                        className="project-card surface-card relative flex min-h-full cursor-pointer overflow-visible rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-4 transition hover:-translate-y-1 hover:border-sky-300/25"
                       >
                         <div className="pointer-events-none absolute inset-x-0 top-0 h-20 rounded-t-[1.6rem] bg-[radial-gradient(circle_at_top_left,_rgba(253,186,116,0.16),transparent_58%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),transparent_58%)]" />
                         <div className="relative flex h-full flex-1 flex-col">
@@ -1285,7 +1286,7 @@ function PublicSite({ locale, setLocale }) {
                             </div>
                             <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">0{index + 1}</span>
                           </div>
-                          <div className="mt-4 rounded-[1.25rem] border border-white/8 bg-slate-950/55 p-3.5">
+                          <div className="project-card-preview mt-4 rounded-[1.25rem] border border-white/8 bg-slate-950/55 p-3.5">
                             <div className="mb-3 aspect-[16/9] overflow-hidden rounded-[1rem] border border-white/10 bg-slate-950/70">
                               <img
                                 src={project.coverImageUrl || '/project-surface.svg'}
@@ -1297,7 +1298,7 @@ function PublicSite({ locale, setLocale }) {
                               />
                             </div>
                             <p
-                              className="text-sm leading-6 text-slate-300"
+                              className="project-card-summary text-sm leading-6 text-slate-300"
                               style={{
                                 display: '-webkit-box',
                                 WebkitLineClamp: 4,
@@ -1308,7 +1309,7 @@ function PublicSite({ locale, setLocale }) {
                               {project.summary}
                             </p>
                           </div>
-                          <div className="mt-4 flex min-h-[3rem] flex-wrap content-start gap-2">
+                          <div className="project-stack mt-4 flex min-h-[3rem] flex-wrap content-start gap-2">
                             {project.stack.slice(0, 4).map((item) => (
                               <span key={`${project.id}-${item}`} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
                                 {item}
@@ -1337,7 +1338,7 @@ function PublicSite({ locale, setLocale }) {
                               </button>
                             ) : null}
                           </div>
-                          <div className="mt-auto flex items-center gap-2 pt-5">
+                          <div className="project-actions mt-auto flex items-center gap-2 pt-5">
                             <a
                               href={project.repository}
                               target="_blank"
@@ -1401,8 +1402,9 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="writings" className="pt-16 sm:pt-20 lg:pt-28">
-          <div className="relative z-10 space-y-10">
+        <Section id="writings" className="writings-section pt-14 sm:pt-20 lg:pt-28">
+          <div className="writings-content relative z-10 space-y-10">
+            <CharacterSticker src="/avatars/writings-music.png" className="character-ghost-faint character-sticker character-writings" />
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={resolveSectionHeading('writings', text.sections.writings).eyebrow}
@@ -1416,10 +1418,10 @@ function PublicSite({ locale, setLocale }) {
               </div>
             ) : (
               <>
-                <div className="writings-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 lg:grid-cols-3">
+                <div className="writings-rail writings-grid hide-scrollbar -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 lg:grid-cols-3">
                   {visibleArticles.map((article, index) => (
                     <div key={article.id} data-reveal className={`writings-rail-item reveal ${index === 0 ? 'relative' : ''}`} style={{ '--reveal-delay': `${50 + index * 90}ms` }}>
-                      <a href={article.href} target="_blank" rel="noreferrer" className={`surface-card group block rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 transition hover:-translate-y-1 hover:border-orange-300/25 sm:p-6 ${index > 0 ? 'surface-card-delayed' : ''}`}>
+                      <a href={article.href} target="_blank" rel="noreferrer" className={`writing-card surface-card group block rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 transition hover:-translate-y-1 hover:border-orange-300/25 sm:p-6 ${index > 0 ? 'surface-card-delayed' : ''}`}>
                         <div className="inline-flex rounded-full border border-orange-300/15 bg-orange-300/10 px-3 py-1 text-xs uppercase tracking-[0.28em] text-orange-100">{article.readingTime}</div>
                         <h3 className="mt-5 text-xl font-semibold text-white sm:mt-6 sm:text-2xl">{article.title}</h3>
                         <p className="mt-4 break-words text-sm leading-7 text-slate-300 [overflow-wrap:anywhere]">{article.excerpt}</p>
@@ -1467,8 +1469,8 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="resume" className="pt-16 sm:pt-20 lg:pt-28">
-          <div className="space-y-10">
+        <Section id="resume" className="resume-section pt-14 sm:pt-20 lg:pt-28">
+          <div className="resume-content space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={resolveSectionHeading('resume', text.sections.resume).eyebrow}
@@ -1476,8 +1478,8 @@ function PublicSite({ locale, setLocale }) {
                 description={resolveSectionHeading('resume', text.sections.resume).description}
               />
             </div>
-            <div data-reveal className="reveal glass-card rounded-[2rem] p-4 sm:p-5 md:p-8" style={{ '--reveal-delay': '110ms' }}>
-              <div className="relative mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-white/10 bg-slate-950/45 px-5 py-4">
+            <div data-reveal className="resume-card reveal glass-card rounded-[2rem] p-4 sm:p-5 md:p-8" style={{ '--reveal-delay': '110ms' }}>
+              <div className="resume-current relative mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-white/10 bg-slate-950/45 px-5 py-4">
                 <CharacterSticker src="/avatars/resume-coffee.png" className="character-ghost character-sticker character-resume" />
                 <div>
                   <p className="text-xs uppercase tracking-[0.32em] text-slate-500">{text.sections.resume.currentCv}</p>
@@ -1493,7 +1495,7 @@ function PublicSite({ locale, setLocale }) {
                   {text.sections.resume.downloadCv}
                 </a>
               </div>
-              <div className="resume-sheet relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#f5f5f1] p-6 text-slate-950 md:p-10">
+              <div className="resume-sheet resume-sheet-card relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#f5f5f1] p-6 text-slate-950 md:p-10">
                 <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr]">
                   <div>
                     <p className="text-sm uppercase tracking-[0.35em] text-slate-500">{text.sections.resume.preview}</p>
@@ -1515,8 +1517,8 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="contact" className="min-h-0 pb-20 pt-16 sm:pb-24 sm:pt-20 lg:pt-28" divider={false}>
-          <div className="relative z-10 grid items-start gap-8 sm:gap-10 xl:grid-cols-[0.78fr_1.02fr] xl:grid-rows-[auto_1fr] xl:gap-x-12 xl:gap-y-8">
+        <Section id="contact" className="contact-section min-h-0 pb-20 pt-14 sm:pb-24 sm:pt-20 lg:pt-28" divider={false}>
+          <div className="contact-layout relative z-10 grid items-start gap-8 sm:gap-10 xl:grid-cols-[0.78fr_1.02fr] xl:grid-rows-[auto_1fr] xl:gap-x-12 xl:gap-y-8">
             <div data-reveal className="reveal xl:col-span-2 xl:row-start-1">
               <SectionHeading
                 className="max-w-5xl"
@@ -1525,7 +1527,7 @@ function PublicSite({ locale, setLocale }) {
                 description={resolveSectionHeading('contact', text.sections.contact).description}
               />
             </div>
-            <div className="grid gap-4 xl:col-start-1 xl:row-start-2">
+            <div className="contact-link-list grid gap-4 xl:col-start-1 xl:row-start-2">
               {contactLinks.map((link, index) => {
                 const Icon = contactIconMap[link.icon] ?? Mail
                 const useBrandIcon = link.icon === 'medium'
@@ -1536,15 +1538,15 @@ function PublicSite({ locale, setLocale }) {
                       href={link.href}
                       target={link.href.startsWith('mailto:') ? undefined : '_blank'}
                       rel={link.href.startsWith('mailto:') ? undefined : 'noreferrer'}
-                      className={`surface-card block rounded-[1.45rem] border border-white/10 bg-white/[0.045] px-4 py-4 transition hover:border-sky-300/20 hover:bg-white/[0.07] sm:rounded-[1.6rem] sm:px-5 ${index > 1 ? 'surface-card-delayed' : ''}`}
+                      className={`contact-link-card surface-card block rounded-[1.45rem] border border-white/10 bg-white/[0.045] px-4 py-4 transition hover:border-sky-300/20 hover:bg-white/[0.07] sm:rounded-[1.6rem] sm:px-5 ${index > 1 ? 'surface-card-delayed' : ''}`}
                     >
                       <div className="flex items-center gap-4">
                         <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-sky-400/10 text-sky-200">
                           {useBrandIcon ? <BrandIcon name="Medium" size={18} color="#dbeafe" /> : <Icon size={18} />}
                         </span>
-                        <div>
+                        <div className="contact-link-text min-w-0">
                           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{link.label}</p>
-                          <p className="mt-2 text-base text-white">{link.value}</p>
+                          <p className="contact-link-value mt-2 text-base text-white">{link.value}</p>
                         </div>
                       </div>
                     </a>
@@ -1552,10 +1554,10 @@ function PublicSite({ locale, setLocale }) {
                 )
               })}
             </div>
-            <div data-reveal className="reveal relative glass-card h-fit w-full place-self-start self-start rounded-[1.75rem] p-5 sm:rounded-[2rem] sm:p-6 md:p-8 xl:col-start-2 xl:row-start-2" style={{ '--reveal-delay': '120ms' }}>
+            <div data-reveal className="contact-form-card reveal relative glass-card h-fit w-full place-self-start self-start rounded-[1.75rem] p-5 sm:rounded-[2rem] sm:p-6 md:p-8 xl:col-start-2 xl:row-start-2" style={{ '--reveal-delay': '120ms' }}>
               <CharacterSticker src="/avatars/contact-wave.png" className="character-ghost-faint character-sticker character-contact" />
               <form onSubmit={handleContactSubmit}>
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="contact-form-grid grid gap-5 md:grid-cols-2">
                   <label className="space-y-2">
                     <span className="relative -top-1 pl-3 text-sm text-slate-300">{text.sections.contact.titleLabel}</span>
                     <input
@@ -1607,7 +1609,7 @@ function PublicSite({ locale, setLocale }) {
         </Section>
       </main>
 
-      <footer className="relative z-10 border-t border-white/10 px-4 py-8 text-center text-sm text-slate-500 md:px-8">
+      <footer className="site-footer relative z-10 border-t border-white/10 px-4 py-8 text-center text-sm text-slate-500 md:px-8">
         <p>{text.footer.copyright}</p>
         <p className="mt-2">{text.footer.note}</p>
       </footer>
