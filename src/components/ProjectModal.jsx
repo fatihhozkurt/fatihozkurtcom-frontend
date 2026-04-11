@@ -74,7 +74,7 @@ export function ProjectModal({ project, onClose, text }) {
 
   return (
     <div
-      className="modal-shell fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/72 p-4 backdrop-blur-md md:p-8"
+      className="modal-shell fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/72 p-3 backdrop-blur-md sm:p-4 md:p-8"
       data-state={state}
       role="dialog"
       aria-modal="true"
@@ -85,30 +85,30 @@ export function ProjectModal({ project, onClose, text }) {
         }
       }}
     >
-      <div className="glass-card modal-panel relative max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[2rem]">
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 md:px-8">
+      <div className="glass-card modal-panel relative max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[1.6rem] md:rounded-[2rem]">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4 sm:px-6 sm:py-5 md:px-8">
           <div>
             <p className="text-xs uppercase tracking-[0.32em] text-slate-500">{project.category}</p>
-            <h3 id={`project-modal-title-${project.id}`} className="mt-2 text-2xl font-semibold text-white md:text-3xl">
+            <h3 id={`project-modal-title-${project.id}`} className="mt-2 text-xl font-semibold text-white sm:text-2xl md:text-3xl">
               {project.title}
             </h3>
           </div>
           <button
             type="button"
             onClick={closeModal}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-slate-100"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-slate-100 md:h-11 md:w-11"
             aria-label={text.closeProjectDetails}
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="max-h-[calc(92vh-5.5rem)] overflow-y-auto px-6 py-6 md:px-8 md:py-8">
-          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="max-h-[calc(92vh-5.5rem)] overflow-y-auto px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
+          <div className="grid gap-6 md:gap-8 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="space-y-6">
               <div className="relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-slate-950/70">
                 <div
-                  className="flex h-64 transition-transform duration-500 ease-out"
+                  className="flex h-52 transition-transform duration-500 ease-out sm:h-64"
                   style={{ transform: `translateX(-${activeSlide * 100}%)` }}
                 >
                   {gallery.map((imageUrl, index) => (
@@ -156,7 +156,7 @@ export function ProjectModal({ project, onClose, text }) {
                 ) : null}
               </div>
 
-              <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.04] p-5">
+              <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.04] p-4 sm:p-5">
                 <p className="text-sm leading-7 text-slate-300">{project.summary}</p>
 
                 <div className="mt-6 flex flex-wrap gap-2">
@@ -197,7 +197,7 @@ export function ProjectModal({ project, onClose, text }) {
               </div>
             </div>
 
-            <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/55 p-6">
+            <div className="rounded-[1.8rem] border border-white/10 bg-slate-950/55 p-4 sm:p-5 md:p-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.28em] text-slate-400">
                 <Newspaper size={14} />
                 {text.readmeView}

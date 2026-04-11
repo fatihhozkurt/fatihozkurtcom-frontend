@@ -212,17 +212,13 @@ button:disabled {
 .character-ghost {
   opacity: 0.94;
   filter:
-    drop-shadow(0 16px 30px rgba(2, 6, 23, 0.55))
-    brightness(0.96)
-    saturate(0.92);
+    drop-shadow(0 16px 30px rgba(2, 6, 23, 0.55)) brightness(0.96) saturate(0.92);
 }
 
 .character-ghost-faint {
   opacity: 0.78;
   filter:
-    drop-shadow(0 14px 28px rgba(2, 6, 23, 0.52))
-    brightness(0.93)
-    saturate(0.88);
+    drop-shadow(0 14px 28px rgba(2, 6, 23, 0.52)) brightness(0.93) saturate(0.88);
 }
 
 .character-sticker {
@@ -244,6 +240,7 @@ button:disabled {
   --character-nudge-y: -4%;
   right: clamp(-5.2rem, -7.2vw, -3.2rem);
   top: 0;
+  z-index: 24;
 }
 
 .character-about {
@@ -412,20 +409,37 @@ button:disabled {
 
 @media (max-width: 1023px) {
   .character-about {
-    display: none;
+    --character-fluid-size: 18vw;
+    --character-max-size: 10rem;
+    left: clamp(0.75rem, 3vw, 2rem);
   }
 }
 
 @media (max-width: 1199px) {
-  .character-contact {
-    display: none;
+  .character-home {
+    --character-fluid-size: 17vw;
+    --character-max-size: 10rem;
+    right: clamp(-2rem, -3vw, -1rem);
   }
 
-  .character-home {
-    --character-fluid-size: 19vw;
-    --anchor-y: 58%;
-    --character-nudge-y: -2%;
-    right: clamp(-3.2rem, -4vw, -1.4rem);
+  .character-about {
+    --character-fluid-size: 16vw;
+    --character-max-size: 9rem;
+    left: clamp(0.75rem, 3vw, 2rem);
+  }
+
+  .character-resume {
+    --character-fluid-size: 16vw;
+    --character-max-size: 8rem;
+    right: clamp(-1rem, -1.8vw, -0.4rem);
+  }
+
+  .character-contact {
+    --character-fluid-size: 16vw;
+    --character-max-size: 7.8rem;
+    --anchor-y: 88%;
+    --character-nudge-y: 12%;
+    right: clamp(1.25rem, 4vw, 2.8rem);
   }
 }
 
@@ -454,8 +468,28 @@ button:disabled {
   }
 
   .character-about {
-    --character-fluid-size: 34vw;
-    --character-max-size: 10.5rem;
-    left: clamp(0.35rem, 3.8vw, 1.6rem);
+    --character-fluid-size: 30vw;
+    --character-max-size: 8.6rem;
+    left: clamp(0.35rem, 3.8vw, 1.2rem);
+  }
+
+  .character-home {
+    --character-fluid-size: 32vw;
+    --character-max-size: 7.25rem;
+    right: clamp(-0.7rem, -2vw, -0.25rem);
+  }
+
+  .character-resume {
+    --character-fluid-size: 28vw;
+    --character-max-size: 7rem;
+    right: clamp(-0.75rem, -2vw, -0.2rem);
+  }
+
+  .character-contact {
+    --character-fluid-size: 26vw;
+    --character-max-size: 6.6rem;
+    --anchor-y: 86%;
+    --character-nudge-y: 10%;
+    right: clamp(0.9rem, 4vw, 1.8rem);
   }
 }

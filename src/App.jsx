@@ -185,17 +185,17 @@ function normalizeProjectReadme(readmeMarkdown, locale) {
   const defaultSections =
     locale === 'tr'
       ? [
-          {
-            title: 'Teknik notlar',
-            items: ['README içeriği bu alana backend üzerinden yüklenecek.'],
-          },
-        ]
+        {
+          title: 'Teknik notlar',
+          items: ['README içeriği bu alana backend üzerinden yüklenecek.'],
+        },
+      ]
       : [
-          {
-            title: 'Technical notes',
-            items: ['README content will be delivered here from backend data.'],
-          },
-        ]
+        {
+          title: 'Technical notes',
+          items: ['README content will be delivered here from backend data.'],
+        },
+      ]
 
   if (!readmeMarkdown || !readmeMarkdown.trim()) {
     return {
@@ -311,9 +311,8 @@ function LanguageSwitch({ locale, setLocale, labels }) {
           type="button"
           onClick={() => setLocale(lang)}
           aria-pressed={locale === lang}
-          className={`rounded-full px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] ${
-            locale === lang ? 'bg-sky-400/15 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.22)]' : 'text-slate-300 hover:bg-white/6 hover:text-white'
-          }`}
+          className={`rounded-full px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] ${locale === lang ? 'bg-sky-400/15 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.22)]' : 'text-slate-300 hover:bg-white/6 hover:text-white'
+            }`}
         >
           {labels[lang]}
         </button>
@@ -607,7 +606,7 @@ function PublicSite({ locale, setLocale }) {
         country: resolveVisitCountryHint(),
       },
       locale,
-    ).catch(() => {})
+    ).catch(() => { })
   }, [locale])
 
   useEffect(() => {
@@ -1060,14 +1059,14 @@ function PublicSite({ locale, setLocale }) {
         {text.accessibility.skipToContent}
       </a>
       <header className="intro-fade sticky top-0 z-50 border-b border-white/10 bg-[rgba(8,10,18,0.7)] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:gap-4 md:px-8 md:py-4">
           <SectionLink href="#home" onNavigate={() => scrollToSection('home')} className="flex items-center gap-3 text-left">
-            <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-sky-400/30 bg-white/5 p-[2px]">
+            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl border border-sky-400/30 bg-white/5 p-[2px] md:h-11 md:w-11">
               <img src="/brand-fo-icon.png" alt="" aria-hidden="true" className="h-full w-full rounded-xl object-contain" />
             </span>
             <span>
-              <span className="block text-sm font-medium text-white">{resolvedHeroContent?.fullName || text.hero.name}</span>
-              <span className="block text-xs uppercase tracking-[0.3em] text-slate-400">{text.brandSubtitle}</span>
+              <span className="block text-[0.95rem] font-medium leading-none text-white md:text-sm">{resolvedHeroContent?.fullName || text.hero.name}</span>
+              <span className="mt-1 block text-[10px] uppercase tracking-[0.24em] text-slate-400 md:text-xs md:tracking-[0.3em]">{text.brandSubtitle}</span>
             </span>
           </SectionLink>
 
@@ -1091,7 +1090,7 @@ function PublicSite({ locale, setLocale }) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 lg:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 lg:hidden md:h-11 md:w-11"
             aria-label={mobileMenuOpen ? text.accessibility.closeNavigation : text.accessibility.openNavigation}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
@@ -1117,11 +1116,10 @@ function PublicSite({ locale, setLocale }) {
                   href={`#${item.id}`}
                   onNavigate={() => scrollToSection(item.id)}
                   aria-current={activeSection === item.id ? 'page' : undefined}
-                  className={`rounded-2xl border px-4 py-3 text-left text-sm ${
-                    activeSection === item.id
+                  className={`rounded-2xl border px-4 py-3 text-left text-sm ${activeSection === item.id
                       ? 'border-sky-300/25 bg-sky-400/15 text-white'
                       : 'border-white/8 bg-white/4 text-slate-200'
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </SectionLink>
@@ -1132,12 +1130,12 @@ function PublicSite({ locale, setLocale }) {
       </header>
 
       <main id="main-content" className="relative z-10">
-        <Section id="home" className="overflow-hidden pt-24 md:pt-28 xl:pt-32">
+        <Section id="home" className="overflow-hidden pt-20 sm:pt-24 lg:pt-32">
           <div className="relative">
-            <div className="mx-auto flex min-h-[34rem] w-full max-w-6xl flex-col items-center justify-start pt-6 text-center md:min-h-[40rem] md:pt-2 lg:min-h-[calc(100vh-10rem)]">
+            <div className="mx-auto flex min-h-[31rem] w-full max-w-6xl flex-col items-center justify-start pt-6 text-center sm:min-h-[35rem] sm:pt-8 lg:min-h-[calc(100vh-10rem)] lg:pt-2">
               <div
                 data-reveal
-                className="reveal relative z-30 inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-orange-300/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-orange-100"
+                className="reveal relative z-10 inline-flex max-w-[min(100%,21rem)] items-center justify-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-300/10 px-3.5 py-2 text-center text-[10px] uppercase leading-5 tracking-[0.24em] text-orange-100 sm:max-w-none sm:gap-2 sm:px-4 sm:text-xs sm:tracking-[0.3em]"
                 style={{ '--reveal-delay': '120ms' }}
               >
                 <Sparkles size={14} />
@@ -1147,29 +1145,29 @@ function PublicSite({ locale, setLocale }) {
               </div>
               <div
                 data-reveal
-                className="reveal relative mt-6 rounded-[2.5rem] border border-white/8 bg-white/[0.025] px-6 py-10 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] md:px-10 md:py-12 lg:px-12 lg:py-14"
+                className="reveal relative mt-6 rounded-[2.1rem] border border-white/8 bg-white/[0.025] px-5 py-8 shadow-[0_30px_100px_rgba(2,6,23,0.32)] backdrop-blur-[2px] sm:mt-8 sm:px-7 sm:py-9 lg:rounded-[2.5rem] lg:px-12 lg:py-14"
                 style={{ '--reveal-delay': '220ms' }}
               >
                 <CharacterSticker src="/avatars/home-laptop.png" className="character-ghost character-sticker character-home" />
-                <h1 className="mx-auto max-w-5xl font-display text-6xl font-semibold leading-[0.9] tracking-tight text-white md:text-[6.4rem] md:leading-[0.88] lg:text-[7.5rem]">
+                <h1 className="mx-auto max-w-[18rem] font-display text-[3.85rem] font-semibold leading-[0.88] tracking-tight text-white sm:max-w-4xl sm:text-[5rem] lg:max-w-5xl lg:text-[7.5rem] lg:leading-[0.88]">
                   {resolvedHeroContent?.fullName || text.hero.name}
                 </h1>
-                <p className="mt-2 text-[1.25rem] font-medium uppercase tracking-[0.16em] text-sky-200/72 md:text-[1.5rem] lg:text-[1.7rem]">
+                <p className="mt-3 text-[1.02rem] font-medium uppercase tracking-[0.14em] text-sky-200/72 sm:text-[1.28rem] lg:mt-2 lg:text-[1.7rem] lg:tracking-[0.16em]">
                   {resolvedHeroContent?.title || text.hero.title}
                 </p>
-                <p className="mx-auto max-w-3xl pt-5 text-base leading-8 text-slate-300 md:text-[1.05rem] lg:text-lg">
+                <p className="mx-auto max-w-[18.5rem] pt-5 text-[0.98rem] leading-7 text-slate-300 sm:max-w-2xl sm:pt-6 sm:text-base lg:max-w-3xl lg:text-lg">
                   {resolvedHeroContent?.description || text.hero.description}
                 </p>
               </div>
               <div
                 data-reveal
-                className="reveal mt-5 flex flex-wrap items-center justify-center gap-3 md:mt-6"
+                className="reveal mt-5 flex flex-wrap items-center justify-center gap-3 sm:mt-6"
                 style={{ '--reveal-delay': '320ms' }}
               >
                 <SectionLink
                   href="#about"
                   onNavigate={() => scrollToSection('about')}
-                  className="button-primary inline-flex items-center rounded-full px-7 py-3 text-sm font-semibold"
+                  className="button-primary inline-flex items-center rounded-full px-6 py-3 text-sm font-semibold sm:px-7"
                 >
                   {resolvedHeroContent?.ctaLabel || text.hero.explore}
                   <ArrowUpRight size={16} className="ml-2" />
@@ -1179,8 +1177,8 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="about" className="pt-20 md:pt-24 xl:pt-28">
-          <div className="relative z-10 grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
+        <Section id="about" className="pt-16 sm:pt-20 lg:pt-28">
+          <div className="relative z-10 grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:gap-10">
             <div data-reveal className="reveal">
               <SectionHeading
                 eyebrow={resolvedAboutContent?.eyebrow || text.sections.about.eyebrow}
@@ -1219,7 +1217,7 @@ function PublicSite({ locale, setLocale }) {
               </div>
             </div>
           </div>
-          <div data-reveal className="reveal relative mt-12 rounded-[2rem] border border-white/10 bg-white/[0.04] py-5" style={{ '--reveal-delay': '120ms' }}>
+          <div data-reveal className="reveal relative mt-10 rounded-[2rem] border border-white/10 bg-white/[0.04] py-5 sm:mt-12" style={{ '--reveal-delay': '120ms' }}>
             <CharacterSticker src="/avatars/about-knight.png" className="character-ghost-faint character-sticker character-about" />
             <div
               ref={techScrollerRef}
@@ -1246,7 +1244,7 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="projects" className="pt-20 md:pt-24 xl:pt-28">
+        <Section id="projects" className="pt-16 sm:pt-20 lg:pt-28">
           <div className="relative z-10 space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
@@ -1261,149 +1259,149 @@ function PublicSite({ locale, setLocale }) {
               </div>
             ) : (
               <>
-              <div className="projects-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 md:grid-cols-2 xl:grid-cols-3">
-                {visibleProjects.map((project, index) => (
-                  <div key={project.id} data-reveal className={`projects-rail-item reveal ${index === 0 ? 'relative' : ''}`} style={{ '--reveal-delay': `${60 + index * 90}ms` }}>
-                    <article
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => openProject(project.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault()
-                          openProject(project.id)
-                        }
-                      }}
-                      className="surface-card relative flex min-h-full cursor-pointer overflow-visible rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-4 transition hover:-translate-y-1 hover:border-sky-300/25"
-                    >
-                      <div className="pointer-events-none absolute inset-x-0 top-0 h-20 rounded-t-[1.6rem] bg-[radial-gradient(circle_at_top_left,_rgba(253,186,116,0.16),transparent_58%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),transparent_58%)]" />
-                      <div className="relative flex h-full flex-1 flex-col">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">{project.category}</p>
-                              <h3 className="mt-2 min-h-[3.2rem] text-[1.18rem] font-semibold leading-tight text-white">{project.title}</h3>
+                <div className="projects-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 md:grid-cols-2 xl:grid-cols-3">
+                  {visibleProjects.map((project, index) => (
+                    <div key={project.id} data-reveal className={`projects-rail-item reveal ${index === 0 ? 'relative' : ''}`} style={{ '--reveal-delay': `${60 + index * 90}ms` }}>
+                      <article
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => openProject(project.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            openProject(project.id)
+                          }
+                        }}
+                        className="surface-card relative flex min-h-full cursor-pointer overflow-visible rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-4 transition hover:-translate-y-1 hover:border-sky-300/25"
+                      >
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-20 rounded-t-[1.6rem] bg-[radial-gradient(circle_at_top_left,_rgba(253,186,116,0.16),transparent_58%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),transparent_58%)]" />
+                        <div className="relative flex h-full flex-1 flex-col">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-xs uppercase tracking-[0.35em] text-slate-500">{project.category}</p>
+                                <h3 className="mt-2 min-h-[3rem] text-lg font-semibold leading-tight text-white sm:min-h-[3.2rem] sm:text-[1.18rem]">{project.title}</h3>
+                              </div>
                             </div>
+                            <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">0{index + 1}</span>
                           </div>
-                          <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">0{index + 1}</span>
-                        </div>
-                        <div className="mt-4 rounded-[1.25rem] border border-white/8 bg-slate-950/55 p-3.5">
-                          <div className="mb-3 aspect-[16/9] overflow-hidden rounded-[1rem] border border-white/10 bg-slate-950/70">
-                            <img
-                              src={project.coverImageUrl || '/project-surface.svg'}
-                              alt=""
-                              loading="eager"
-                              decoding="async"
-                              fetchPriority={index < 4 ? 'high' : 'auto'}
-                              className="h-full w-full object-contain object-center"
-                            />
+                          <div className="mt-4 rounded-[1.25rem] border border-white/8 bg-slate-950/55 p-3.5">
+                            <div className="mb-3 aspect-[16/9] overflow-hidden rounded-[1rem] border border-white/10 bg-slate-950/70">
+                              <img
+                                src={project.coverImageUrl || '/project-surface.svg'}
+                                alt=""
+                                loading="eager"
+                                decoding="async"
+                                fetchPriority={index < 4 ? 'high' : 'auto'}
+                                className="h-full w-full object-contain object-center"
+                              />
+                            </div>
+                            <p
+                              className="text-sm leading-6 text-slate-300"
+                              style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 4,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              {project.summary}
+                            </p>
                           </div>
-                          <p
-                            className="text-sm leading-6 text-slate-300"
-                            style={{
-                              display: '-webkit-box',
-                              WebkitLineClamp: 4,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                            }}
-                          >
-                            {project.summary}
-                          </p>
-                        </div>
-                        <div className="mt-4 flex min-h-[3rem] flex-wrap content-start gap-2">
-                          {project.stack.slice(0, 4).map((item) => (
-                            <span key={`${project.id}-${item}`} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
+                          <div className="mt-4 flex min-h-[3rem] flex-wrap content-start gap-2">
+                            {project.stack.slice(0, 4).map((item) => (
+                              <span key={`${project.id}-${item}`} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
                                 {item}
-                            </span>
-                          ))}
-                          {project.stack.length > 4 ? (
+                              </span>
+                            ))}
+                            {project.stack.length > 4 ? (
+                              <button
+                                type="button"
+                                onClick={(event) => event.stopPropagation()}
+                                className="group/stack relative rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400"
+                                aria-label={locale === 'tr' ? 'Kalan teknolojileri göster' : 'Show remaining technologies'}
+                              >
+                                +{project.stack.length - 4}
+                                <span className="pointer-events-none absolute bottom-[calc(100%+0.55rem)] left-1/2 z-50 w-56 -translate-x-1/2 translate-y-1 rounded-xl border border-white/12 bg-slate-950/96 px-3 py-2 text-left text-[11px] leading-5 text-slate-200 opacity-0 shadow-[0_14px_30px_rgba(2,6,23,0.45)] transition duration-200 group-hover/stack:translate-y-0 group-hover/stack:opacity-100 group-focus-visible/stack:translate-y-0 group-focus-visible/stack:opacity-100">
+                                  <span className="mb-1 block text-[10px] uppercase tracking-[0.24em] text-slate-400">
+                                    {locale === 'tr' ? 'Kalan teknolojiler' : 'Remaining technologies'}
+                                  </span>
+                                  <span className="flex flex-col">
+                                    {project.stack.slice(4).map((stackItem, stackIndex) => (
+                                      <span key={`${project.id}-${stackItem}-extra-${stackIndex}`} className="block">
+                                        {stackItem}
+                                      </span>
+                                    ))}
+                                  </span>
+                                </span>
+                              </button>
+                            ) : null}
+                          </div>
+                          <div className="mt-auto flex items-center gap-2 pt-5">
+                            <a
+                              href={project.repository}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(event) => event.stopPropagation()}
+                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3.5 py-2 text-[13px] text-slate-200 transition hover:bg-white/10 sm:text-sm"
+                            >
+                              <Github size={16} />
+                              {text.sections.projects.github}
+                            </a>
                             <button
                               type="button"
-                              onClick={(event) => event.stopPropagation()}
-                              className="group/stack relative rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400"
-                              aria-label={locale === 'tr' ? 'Kalan teknolojileri göster' : 'Show remaining technologies'}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                openProject(project.id)
+                              }}
+                              className="button-secondary inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-[13px] sm:text-sm"
                             >
-                              +{project.stack.length - 4}
-                              <span className="pointer-events-none absolute bottom-[calc(100%+0.55rem)] left-1/2 z-50 w-56 -translate-x-1/2 translate-y-1 rounded-xl border border-white/12 bg-slate-950/96 px-3 py-2 text-left text-[11px] leading-5 text-slate-200 opacity-0 shadow-[0_14px_30px_rgba(2,6,23,0.45)] transition duration-200 group-hover/stack:translate-y-0 group-hover/stack:opacity-100 group-focus-visible/stack:translate-y-0 group-focus-visible/stack:opacity-100">
-                                <span className="mb-1 block text-[10px] uppercase tracking-[0.24em] text-slate-400">
-                                  {locale === 'tr' ? 'Kalan teknolojiler' : 'Remaining technologies'}
-                                </span>
-                                <span className="flex flex-col">
-                                  {project.stack.slice(4).map((stackItem, stackIndex) => (
-                                    <span key={`${project.id}-${stackItem}-extra-${stackIndex}`} className="block">
-                                      {stackItem}
-                                    </span>
-                                  ))}
-                                </span>
-                              </span>
+                              <ArrowUpRight size={16} />
+                              {text.sections.projects.openDetails}
                             </button>
-                          ) : null}
+                          </div>
                         </div>
-                        <div className="mt-auto flex items-center gap-2 pt-5">
-                          <a
-                            href={project.repository}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={(event) => event.stopPropagation()}
-                            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3.5 py-2 text-sm text-slate-200 transition hover:bg-white/10"
-                          >
-                            <Github size={16} />
-                            {text.sections.projects.github}
-                          </a>
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              openProject(project.id)
-                            }}
-                            className="button-secondary inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm"
-                          >
-                            <ArrowUpRight size={16} />
-                            {text.sections.projects.openDetails}
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  </div>
-                ))}
-              </div>
-              {totalProjectPages > 1 ? (
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setProjectPage((page) => Math.max(1, page - 1))}
-                    disabled={effectiveProjectPage === 1}
-                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
-                  >
-                    {locale === 'tr' ? 'Önceki' : 'Prev'}
-                  </button>
-                  {Array.from({ length: totalProjectPages }, (_, idx) => idx + 1).map((page) => (
-                    <button
-                      key={`project-page-${page}`}
-                      type="button"
-                      onClick={() => setProjectPage(page)}
-                      aria-current={effectiveProjectPage === page ? 'page' : undefined}
-                      className={`h-8 min-w-8 rounded-full px-2 text-xs font-semibold ${effectiveProjectPage === page ? 'bg-sky-400/20 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.35)]' : 'border border-white/10 bg-white/6 text-slate-300 hover:text-white'}`}
-                    >
-                      {page}
-                    </button>
+                      </article>
+                    </div>
                   ))}
-                  <button
-                    type="button"
-                    onClick={() => setProjectPage((page) => Math.min(totalProjectPages, page + 1))}
-                    disabled={effectiveProjectPage === totalProjectPages}
-                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
-                  >
-                    {locale === 'tr' ? 'Sonraki' : 'Next'}
-                  </button>
                 </div>
-              ) : null}
+                {totalProjectPages > 1 ? (
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setProjectPage((page) => Math.max(1, page - 1))}
+                      disabled={effectiveProjectPage === 1}
+                      className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
+                    >
+                      {locale === 'tr' ? 'Önceki' : 'Prev'}
+                    </button>
+                    {Array.from({ length: totalProjectPages }, (_, idx) => idx + 1).map((page) => (
+                      <button
+                        key={`project-page-${page}`}
+                        type="button"
+                        onClick={() => setProjectPage(page)}
+                        aria-current={effectiveProjectPage === page ? 'page' : undefined}
+                        className={`h-8 min-w-8 rounded-full px-2 text-xs font-semibold ${effectiveProjectPage === page ? 'bg-sky-400/20 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.35)]' : 'border border-white/10 bg-white/6 text-slate-300 hover:text-white'}`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setProjectPage((page) => Math.min(totalProjectPages, page + 1))}
+                      disabled={effectiveProjectPage === totalProjectPages}
+                      className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
+                    >
+                      {locale === 'tr' ? 'Sonraki' : 'Next'}
+                    </button>
+                  </div>
+                ) : null}
               </>
             )}
           </div>
         </Section>
 
-        <Section id="writings" className="pt-20 md:pt-24 xl:pt-28">
+        <Section id="writings" className="pt-16 sm:pt-20 lg:pt-28">
           <div className="relative z-10 space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
@@ -1418,58 +1416,58 @@ function PublicSite({ locale, setLocale }) {
               </div>
             ) : (
               <>
-              <div className="writings-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-3">
-                {visibleArticles.map((article, index) => (
-                  <div key={article.id} data-reveal className={`writings-rail-item reveal ${index === 0 ? 'relative' : ''}`} style={{ '--reveal-delay': `${50 + index * 90}ms` }}>
-                    <a href={article.href} target="_blank" rel="noreferrer" className={`surface-card group block rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 transition hover:-translate-y-1 hover:border-orange-300/25 ${index > 0 ? 'surface-card-delayed' : ''}`}>
-                      <div className="inline-flex rounded-full border border-orange-300/15 bg-orange-300/10 px-3 py-1 text-xs uppercase tracking-[0.28em] text-orange-100">{article.readingTime}</div>
-                      <h3 className="mt-6 text-2xl font-semibold text-white">{article.title}</h3>
-                      <p className="mt-4 break-words text-sm leading-7 text-slate-300 [overflow-wrap:anywhere]">{article.excerpt}</p>
-                      <div className="mt-8 inline-flex items-center gap-2 text-sm text-sky-200">
-                        {text.sections.writings.readOnMedium}
-                        <ArrowUpRight size={16} />
-                      </div>
-                    </a>
-                  </div>
-                ))}
-              </div>
-              {totalWritingPages > 1 ? (
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setWritingPage((page) => Math.max(1, page - 1))}
-                    disabled={effectiveWritingPage === 1}
-                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
-                  >
-                    {locale === 'tr' ? 'Önceki' : 'Prev'}
-                  </button>
-                  {Array.from({ length: totalWritingPages }, (_, idx) => idx + 1).map((page) => (
-                    <button
-                      key={`writing-page-${page}`}
-                      type="button"
-                      onClick={() => setWritingPage(page)}
-                      aria-current={effectiveWritingPage === page ? 'page' : undefined}
-                      className={`h-8 min-w-8 rounded-full px-2 text-xs font-semibold ${effectiveWritingPage === page ? 'bg-sky-400/20 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.35)]' : 'border border-white/10 bg-white/6 text-slate-300 hover:text-white'}`}
-                    >
-                      {page}
-                    </button>
+                <div className="writings-rail hide-scrollbar -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:mx-0 md:grid md:overflow-visible md:pb-0 lg:grid-cols-3">
+                  {visibleArticles.map((article, index) => (
+                    <div key={article.id} data-reveal className={`writings-rail-item reveal ${index === 0 ? 'relative' : ''}`} style={{ '--reveal-delay': `${50 + index * 90}ms` }}>
+                      <a href={article.href} target="_blank" rel="noreferrer" className={`surface-card group block rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 transition hover:-translate-y-1 hover:border-orange-300/25 sm:p-6 ${index > 0 ? 'surface-card-delayed' : ''}`}>
+                        <div className="inline-flex rounded-full border border-orange-300/15 bg-orange-300/10 px-3 py-1 text-xs uppercase tracking-[0.28em] text-orange-100">{article.readingTime}</div>
+                        <h3 className="mt-5 text-xl font-semibold text-white sm:mt-6 sm:text-2xl">{article.title}</h3>
+                        <p className="mt-4 break-words text-sm leading-7 text-slate-300 [overflow-wrap:anywhere]">{article.excerpt}</p>
+                        <div className="mt-8 inline-flex items-center gap-2 text-sm text-sky-200">
+                          {text.sections.writings.readOnMedium}
+                          <ArrowUpRight size={16} />
+                        </div>
+                      </a>
+                    </div>
                   ))}
-                  <button
-                    type="button"
-                    onClick={() => setWritingPage((page) => Math.min(totalWritingPages, page + 1))}
-                    disabled={effectiveWritingPage === totalWritingPages}
-                    className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
-                  >
-                    {locale === 'tr' ? 'Sonraki' : 'Next'}
-                  </button>
                 </div>
-              ) : null}
+                {totalWritingPages > 1 ? (
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setWritingPage((page) => Math.max(1, page - 1))}
+                      disabled={effectiveWritingPage === 1}
+                      className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
+                    >
+                      {locale === 'tr' ? 'Önceki' : 'Prev'}
+                    </button>
+                    {Array.from({ length: totalWritingPages }, (_, idx) => idx + 1).map((page) => (
+                      <button
+                        key={`writing-page-${page}`}
+                        type="button"
+                        onClick={() => setWritingPage(page)}
+                        aria-current={effectiveWritingPage === page ? 'page' : undefined}
+                        className={`h-8 min-w-8 rounded-full px-2 text-xs font-semibold ${effectiveWritingPage === page ? 'bg-sky-400/20 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.35)]' : 'border border-white/10 bg-white/6 text-slate-300 hover:text-white'}`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setWritingPage((page) => Math.min(totalWritingPages, page + 1))}
+                      disabled={effectiveWritingPage === totalWritingPages}
+                      className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-slate-200 disabled:opacity-45"
+                    >
+                      {locale === 'tr' ? 'Sonraki' : 'Next'}
+                    </button>
+                  </div>
+                ) : null}
               </>
             )}
           </div>
         </Section>
 
-        <Section id="resume" className="pt-20 md:pt-24 xl:pt-28">
+        <Section id="resume" className="pt-16 sm:pt-20 lg:pt-28">
           <div className="space-y-10">
             <div data-reveal className="reveal">
               <SectionHeading
@@ -1478,7 +1476,7 @@ function PublicSite({ locale, setLocale }) {
                 description={resolveSectionHeading('resume', text.sections.resume).description}
               />
             </div>
-            <div data-reveal className="reveal glass-card rounded-[2rem] p-5 md:p-8" style={{ '--reveal-delay': '110ms' }}>
+            <div data-reveal className="reveal glass-card rounded-[2rem] p-4 sm:p-5 md:p-8" style={{ '--reveal-delay': '110ms' }}>
               <div className="relative mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-white/10 bg-slate-950/45 px-5 py-4">
                 <CharacterSticker src="/avatars/resume-coffee.png" className="character-ghost character-sticker character-resume" />
                 <div>
@@ -1489,7 +1487,7 @@ function PublicSite({ locale, setLocale }) {
                   href={resumeContent?.downloadUrl || '#'}
                   target="_blank"
                   rel="noreferrer"
-                  className="button-primary inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold"
+                  className="button-primary inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold sm:w-auto"
                 >
                   <FileText size={16} />
                   {text.sections.resume.downloadCv}
@@ -1499,7 +1497,7 @@ function PublicSite({ locale, setLocale }) {
                 <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr]">
                   <div>
                     <p className="text-sm uppercase tracking-[0.35em] text-slate-500">{text.sections.resume.preview}</p>
-                    <h3 className="mt-4 text-4xl font-semibold">{text.hero.name}</h3>
+                    <h3 className="mt-4 text-3xl font-semibold lg:text-4xl">{text.hero.name}</h3>
                     <p className="mt-3 text-lg text-slate-700">{resolvedHeroContent?.title || text.hero.title}</p>
                     <p className="mt-8 max-w-xl text-sm leading-7 text-slate-700">{text.sections.resume.previewDescription}</p>
                   </div>
@@ -1517,8 +1515,8 @@ function PublicSite({ locale, setLocale }) {
           </div>
         </Section>
 
-        <Section id="contact" className="min-h-0 pb-24 pt-20 md:pt-24 xl:pt-28" divider={false}>
-          <div className="relative z-10 grid items-start gap-10 xl:grid-cols-[0.78fr_1.02fr] xl:grid-rows-[auto_1fr] xl:gap-x-12 xl:gap-y-8">
+        <Section id="contact" className="min-h-0 pb-20 pt-16 sm:pb-24 sm:pt-20 lg:pt-28" divider={false}>
+          <div className="relative z-10 grid items-start gap-8 sm:gap-10 xl:grid-cols-[0.78fr_1.02fr] xl:grid-rows-[auto_1fr] xl:gap-x-12 xl:gap-y-8">
             <div data-reveal className="reveal xl:col-span-2 xl:row-start-1">
               <SectionHeading
                 className="max-w-5xl"
@@ -1538,7 +1536,7 @@ function PublicSite({ locale, setLocale }) {
                       href={link.href}
                       target={link.href.startsWith('mailto:') ? undefined : '_blank'}
                       rel={link.href.startsWith('mailto:') ? undefined : 'noreferrer'}
-                      className={`surface-card block rounded-[1.6rem] border border-white/10 bg-white/[0.045] px-5 py-4 transition hover:border-sky-300/20 hover:bg-white/[0.07] ${index > 1 ? 'surface-card-delayed' : ''}`}
+                      className={`surface-card block rounded-[1.45rem] border border-white/10 bg-white/[0.045] px-4 py-4 transition hover:border-sky-300/20 hover:bg-white/[0.07] sm:rounded-[1.6rem] sm:px-5 ${index > 1 ? 'surface-card-delayed' : ''}`}
                     >
                       <div className="flex items-center gap-4">
                         <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-sky-400/10 text-sky-200">
@@ -1554,7 +1552,7 @@ function PublicSite({ locale, setLocale }) {
                 )
               })}
             </div>
-            <div data-reveal className="reveal relative glass-card h-fit place-self-start self-start rounded-[2rem] p-6 md:p-8 xl:col-start-2 xl:row-start-2" style={{ '--reveal-delay': '120ms' }}>
+            <div data-reveal className="reveal relative glass-card h-fit w-full place-self-start self-start rounded-[1.75rem] p-5 sm:rounded-[2rem] sm:p-6 md:p-8 xl:col-start-2 xl:row-start-2" style={{ '--reveal-delay': '120ms' }}>
               <CharacterSticker src="/avatars/contact-wave.png" className="character-ghost-faint character-sticker character-contact" />
               <form onSubmit={handleContactSubmit}>
                 <div className="grid gap-5 md:grid-cols-2">
@@ -1744,17 +1742,17 @@ function App() {
     }
     canonicalNode.setAttribute('href', canonicalUrl)
 
-    ;['tr', 'en'].forEach((lang) => {
-      const hrefLang = lang === 'tr' ? 'tr-TR' : 'en-US'
-      let altNode = document.head.querySelector(`link[rel="alternate"][hreflang="${hrefLang}"]`)
-      if (!altNode) {
-        altNode = document.createElement('link')
-        altNode.setAttribute('rel', 'alternate')
-        altNode.setAttribute('hreflang', hrefLang)
-        document.head.appendChild(altNode)
-      }
-      altNode.setAttribute('href', 'https://fatihozkurt.com/')
-    })
+      ;['tr', 'en'].forEach((lang) => {
+        const hrefLang = lang === 'tr' ? 'tr-TR' : 'en-US'
+        let altNode = document.head.querySelector(`link[rel="alternate"][hreflang="${hrefLang}"]`)
+        if (!altNode) {
+          altNode = document.createElement('link')
+          altNode.setAttribute('rel', 'alternate')
+          altNode.setAttribute('hreflang', hrefLang)
+          document.head.appendChild(altNode)
+        }
+        altNode.setAttribute('href', 'https://fatihozkurt.com/')
+      })
 
     if (!isAuthPage) {
       const jsonLd = {

@@ -37,7 +37,7 @@ export function Section({ id, className = '', children, divider = true }) {
     <section
       id={id}
       data-section={id}
-      className={`relative mx-auto max-w-7xl scroll-mt-28 px-4 pb-8 md:px-8 md:pb-12 ${className}`}
+      className={`relative mx-auto max-w-7xl scroll-mt-24 px-4 pb-6 sm:pb-8 md:scroll-mt-28 md:px-8 md:pb-12 ${className}`}
     >
       {children}
       {divider ? (
@@ -53,20 +53,20 @@ export function Section({ id, className = '', children, divider = true }) {
 export function SectionHeading({ eyebrow, title, description, className = '' }) {
   return (
     <div className={`max-w-3xl space-y-4 ${className}`}>
-      <p className="text-sm uppercase tracking-[0.35em] text-slate-500">{eyebrow}</p>
-      <h2 className="text-4xl font-semibold tracking-tight text-white md:text-5xl">{title}</h2>
-      <p className="text-base leading-8 text-slate-300 md:text-lg">{description}</p>
+      <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 sm:text-sm sm:tracking-[0.35em]">{eyebrow}</p>
+      <h2 className="text-[2rem] font-semibold tracking-tight text-white sm:text-[2.45rem] lg:text-5xl">{title}</h2>
+      <p className="text-[0.98rem] leading-7 text-slate-300 sm:text-base lg:text-lg lg:leading-8">{description}</p>
     </div>
   )
 }
 
 export function InfoCard({ icon: Icon, title, description }) {
   return (
-    <article className="surface-card flex h-full min-h-[18.6rem] flex-col rounded-[1.8rem] border border-white/10 bg-white/[0.045] p-5">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-sky-400/10 text-sky-200">
-        {createElement(Icon, { size: 20 })}
+    <article className="surface-card flex h-full min-h-[15rem] flex-col rounded-[1.6rem] border border-white/10 bg-white/[0.045] p-4 sm:min-h-[16.5rem] sm:rounded-[1.8rem] sm:p-5 lg:min-h-[18.6rem]">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-sky-400/10 text-sky-200 sm:h-12 sm:w-12">
+        {createElement(Icon, { size: 18 })}
       </div>
-      <h3 className="mt-5 text-xl font-semibold text-white">{title}</h3>
+      <h3 className="mt-4 text-[1.15rem] font-semibold text-white sm:mt-5 sm:text-xl">{title}</h3>
       <p className="mt-3 text-sm leading-7 text-slate-300">{description}</p>
     </article>
   )
@@ -76,8 +76,8 @@ export function TechPill({ item }) {
   const stackIcon = stackIconMap[item.category] ?? Sparkles
 
   return (
-    <div className="surface-card inline-flex items-center gap-3 rounded-full border border-white/10 bg-slate-950/65 px-4 py-3 text-sm text-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.15)]">
-      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-sky-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+    <div className="surface-card inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-slate-950/65 px-3.5 py-2.5 text-[0.92rem] text-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.15)] sm:gap-3 sm:px-4 sm:py-3 sm:text-sm">
+      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/6 text-sky-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:h-10 sm:w-10">
         <BrandIcon name={item.name} iconKey={item.icon} fallback={stackIcon} size={16} />
       </span>
       <span className="font-medium">{item.name}</span>
