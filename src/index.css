@@ -479,7 +479,7 @@ button:disabled {
   }
 
   .public-site-shell .hero-stage {
-    min-height: 23.2rem;
+    min-height: auto;
     justify-content: flex-start;
     padding-top: 0.45rem;
   }
@@ -492,6 +492,15 @@ button:disabled {
     font-size: 0.54rem;
     letter-spacing: 0.28em;
     line-height: 1.4;
+    overflow: hidden;
+  }
+
+  .public-site-shell .hero-badge .hero-badge-line {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .public-site-shell .hero-panel {
@@ -791,18 +800,18 @@ button:disabled {
   }
 
   .character-home {
-    --character-fluid-size: 24vw;
-    --character-max-size: 6.4rem;
-    --anchor-y: 63%;
-    --character-nudge-y: -2%;
-    right: clamp(-0.34rem, -1.1vw, -0.1rem);
+    --character-fluid-size: 22vw;
+    --character-max-size: 5.8rem;
+    --anchor-y: 50%;
+    --character-nudge-y: -4%;
+    right: clamp(-0.2rem, -0.8vw, 0rem);
   }
 
   .character-resume {
-    --character-fluid-size: 20vw;
-    --character-max-size: 5.2rem;
-    --anchor-y: 88%;
-    right: clamp(-0.32rem, -1.2vw, -0.08rem);
+    --character-fluid-size: 18vw;
+    --character-max-size: 4.8rem;
+    --anchor-y: 66%;
+    right: clamp(-0.2rem, -0.8vw, 0rem);
   }
 
   .character-contact {
