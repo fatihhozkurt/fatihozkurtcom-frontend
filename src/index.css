@@ -472,6 +472,49 @@ button:disabled {
   .public-site-shell .hero-stage {
     min-height: auto;
   }
+
+  .public-site-shell .site-header nav {
+    padding-right: 5.8rem;
+    gap: 0.25rem;
+  }
+
+  .public-site-shell .site-header nav a {
+    padding-inline: 0.6rem;
+  }
+
+  .public-site-shell .site-header .pointer-events-none {
+    right: 0.35rem;
+  }
+
+  
+  .character-home {
+    --character-fluid-size: 20vw;
+    --character-max-size: 12.5rem;
+    --anchor-y: 76%;
+    --character-nudge-y: 8%;
+    right: clamp(-5rem, -4vw, -1.5rem);
+  }
+
+  .character-about {
+    --character-fluid-size: 16vw;
+    --character-max-size: 10.5rem;
+    --anchor-y: 107%;
+    --character-nudge-y: 6%;
+  }
+
+  .character-resume {
+    --character-fluid-size: 18vw;
+    --character-max-size: 11rem;
+    --anchor-y: 98%;
+    --character-nudge-y: 10%;
+  }
+
+  .character-contact {
+    --character-fluid-size: 17vw;
+    --character-max-size: 10.8rem;
+    --anchor-y: 80%;
+    --character-nudge-y: 8%;
+  }
 }
 
 @media (max-width: 767px) {
