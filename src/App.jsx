@@ -1,9 +1,12 @@
 import {
   ArrowUpRight,
+  BookOpen,
   ChartNoAxesCombined,
   Cloud,
   FileText,
+  FolderKanban,
   Github,
+  Home,
   Languages,
   Linkedin,
   Mail,
@@ -11,6 +14,7 @@ import {
   ServerCog,
   ShieldCheck,
   Sparkles,
+  UserRound,
   X,
 } from 'lucide-react'
 import { IconArticle, IconFolderQuestion } from '@tabler/icons-react'
@@ -40,6 +44,15 @@ const contactIconMap = {
   mail: Mail,
   linkedin: Linkedin,
   github: Github,
+}
+
+const navIconMap = {
+  home: Home,
+  about: UserRound,
+  projects: FolderKanban,
+  writings: BookOpen,
+  resume: FileText,
+  contact: Mail,
 }
 
 const ADMIN_ROUTE = '/auth'
@@ -488,6 +501,23 @@ function PublicSite({ locale, setLocale }) {
   }, [locale, resolvedHeroContent?.welcomeText, text.hero.rotatingLines])
   const [heroBadgeLineIndex, setHeroBadgeLineIndex] = useState(() => randomIndex(safeList(uiText.en.hero.rotatingLines).length))
   const heroBadgeLine = heroBadgeLines[heroBadgeLineIndex] || localizedText(resolvedHeroContent?.welcomeText, locale) || text.hero.currentCandidate
+  const heroBadgeLineRef = useRef(null)
+  const heroBadgeRef = useRef(null)
+  const updateHeroBadgeWrap = useCallback(() => {
+    const badge = heroBadgeRef.current
+    const line = heroBadgeLineRef.current
+    if (!badge || !line) {
+      return
+    }
+    const measure = document.createElement('span')
+    measure.className = 'hero-badge-line hero-badge-line-measure'
+    measure.textContent = line.textContent || ''
+    badge.appendChild(measure)
+    const available = badge.clientWidth - line.offsetLeft - 1
+    const needsWrap = measure.scrollWidth > available + 1
+    badge.removeChild(measure)
+    line.classList.toggle('hero-badge-line-wrap', needsWrap)
+  }, [])
   const resolveSectionHeading = useCallback(
     (sectionKey, fallback) => {
       const dynamic = pageSections[String(sectionKey || '').toLowerCase()]
@@ -503,6 +533,17 @@ function PublicSite({ locale, setLocale }) {
     },
     [pageSections],
   )
+
+  useEffect(() => {
+    updateHeroBadgeWrap()
+    const line = heroBadgeLineRef.current
+    if (!line || typeof ResizeObserver === 'undefined') {
+      return undefined
+    }
+    const observer = new ResizeObserver(() => updateHeroBadgeWrap())
+    observer.observe(line)
+    return () => observer.disconnect()
+  }, [heroBadgeLine, locale, updateHeroBadgeWrap])
 
   useEffect(() => {
     let cancelled = false
@@ -1097,15 +1138,23 @@ function PublicSite({ locale, setLocale }) {
             className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 p-1 lg:ml-auto lg:mr-16 lg:flex"
           >
             {navigationItems.map((item) => (
-              <SectionLink
+              (() => {
+                const NavIcon = navIconMap[item.id]
+                return (
+                  <SectionLink
                 key={item.id}
                 href={`#${item.id}`}
                 onNavigate={() => scrollToSection(item.id)}
                 aria-current={activeSection === item.id ? 'page' : undefined}
                 className={`rounded-full px-4 py-2 text-sm ${activeSection === item.id ? 'bg-sky-400/15 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.22)]' : 'text-slate-300 hover:bg-white/6 hover:text-white'}`}
               >
-                {item.label}
+                <span className="nav-link-label">
+                  {NavIcon ? <NavIcon size={14} className="nav-link-icon" aria-hidden="true" /> : null}
+                  {item.label}
+                </span>
               </SectionLink>
+                )
+              })()
             ))}
           </nav>
 
@@ -1133,18 +1182,24 @@ function PublicSite({ locale, setLocale }) {
                 <LanguageSwitch locale={locale} setLocale={setLocale} labels={text.lang} />
               </div>
               {navigationItems.map((item) => (
-                <SectionLink
+                (() => {
+                  const NavIcon = navIconMap[item.id]
+                  return (
+                    <SectionLink
                   key={item.id}
                   href={`#${item.id}`}
                   onNavigate={() => scrollToSection(item.id)}
                   aria-current={activeSection === item.id ? 'page' : undefined}
-                  className={`rounded-2xl border px-4 py-3 text-left text-sm ${activeSection === item.id
+                  className={`mobile-nav-link rounded-2xl border px-4 py-3 text-left text-sm ${activeSection === item.id
                       ? 'border-sky-300/25 bg-sky-400/15 text-white'
                       : 'border-white/8 bg-white/4 text-slate-200'
                     }`}
                 >
-                  {item.label}
+                  {NavIcon ? <NavIcon size={16} className="mobile-nav-icon" aria-hidden="true" /> : null}
+                  <span className="mobile-nav-label">{item.label}</span>
                 </SectionLink>
+                  )
+                })()
               ))}
             </div>
           </div>
@@ -1160,13 +1215,18 @@ function PublicSite({ locale, setLocale }) {
         <Section id="home" className="home-section overflow-hidden pt-12 sm:pt-24 lg:pt-32">
           <div className="relative">
             <div className="hero-stage mx-auto flex min-h-[26rem] w-full max-w-6xl flex-col items-center justify-start pt-4 text-center sm:min-h-[35rem] sm:pt-8 lg:min-h-[calc(100vh-10rem)] lg:pt-2">
-              <div
-                data-reveal
-                className="hero-badge reveal relative z-10 inline-flex max-w-[min(100%,21rem)] items-center justify-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-300/10 px-3.5 py-2 text-center text-[10px] uppercase leading-5 tracking-[0.24em] text-orange-100 sm:max-w-none sm:gap-2 sm:px-4 sm:text-xs sm:tracking-[0.3em]"
-                style={{ '--reveal-delay': '120ms' }}
-              >
+                <div
+                  data-reveal
+                  ref={heroBadgeRef}
+                  className="hero-badge reveal relative z-10 inline-flex max-w-[min(100%,21rem)] items-center justify-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-300/10 px-3.5 py-2 text-center text-[10px] uppercase leading-5 tracking-[0.24em] text-orange-100 sm:max-w-none sm:gap-2 sm:px-4 sm:text-xs sm:tracking-[0.3em]"
+                  style={{ '--reveal-delay': '120ms' }}
+                >
                 <Sparkles size={14} />
-                <span key={`${locale}-${heroBadgeLineIndex}-${heroBadgeLine}`} className="hero-badge-line">
+                <span
+                  key={`${locale}-${heroBadgeLineIndex}-${heroBadgeLine}`}
+                  ref={heroBadgeLineRef}
+                  className="hero-badge-line"
+                >
                   {heroBadgeLine}
                 </span>
               </div>

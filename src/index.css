@@ -110,6 +110,16 @@ button:disabled {
   overflow-x: clip;
 }
 
+.public-site-shell .nav-link-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.public-site-shell .nav-link-icon {
+  opacity: 0.8;
+}
+
 .skip-link {
   transform: translateY(-180%);
   transition: transform 180ms ease;
@@ -484,7 +494,8 @@ button:disabled {
     max-width: 28rem;
     scroll-margin-top: 5rem;
     padding-inline: 1rem;
-    padding-bottom: 2.2rem;
+    padding-top: 1.15rem;
+    padding-bottom: 3.1rem;
   }
 
   .public-site-shell .home-section {
@@ -505,7 +516,7 @@ button:disabled {
     font-size: 0.54rem;
     letter-spacing: 0.28em;
     line-height: 1.4;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .public-site-shell .hero-badge .hero-badge-line {
@@ -514,6 +525,18 @@ button:disabled {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .public-site-shell .hero-badge .hero-badge-line.hero-badge-line-wrap {
+    white-space: normal;
+    text-overflow: clip;
+  }
+
+  .public-site-shell .hero-badge .hero-badge-line.hero-badge-line-measure {
+    position: absolute;
+    visibility: hidden;
+    white-space: nowrap;
+    pointer-events: none;
   }
 
   .public-site-shell .mobile-figure-dock {
@@ -631,6 +654,22 @@ button:disabled {
     font-size: 0.9rem;
     letter-spacing: normal;
     line-height: 1.58;
+  }
+
+  .public-site-shell .mobile-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    padding-right: 1rem;
+  }
+
+  .public-site-shell .mobile-nav-label {
+    flex: 1;
+  }
+
+  .public-site-shell .mobile-nav-icon {
+    color: rgba(148, 163, 184, 0.9);
   }
 
   .public-site-shell .about-section,
