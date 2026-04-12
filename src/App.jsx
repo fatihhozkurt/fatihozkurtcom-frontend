@@ -365,6 +365,28 @@ const DESKTOP_LIST_PAGE_SIZE = 6
 const MOBILE_LIST_PAGE_SIZE = 3
 const MOBILE_MEDIA_QUERY = '(max-width: 767px)'
 const HERO_BADGE_ROTATE_MS = 10000
+const MOBILE_FIGURE_ITEMS = [
+  { id: 'home', src: '/avatars/home-laptop.png' },
+  { id: 'about', src: '/avatars/about-knight.png' },
+  { id: 'projects', src: '/avatars/projects-chair-laptop.png' },
+  { id: 'writings', src: '/avatars/writings-music.png' },
+  { id: 'resume', src: '/avatars/resume-coffee.png' },
+  { id: 'contact', src: '/avatars/contact-wave.png' },
+]
+
+function MobileFigureDock({ activeSection, label }) {
+  const activeItem = MOBILE_FIGURE_ITEMS.find((item) => item.id === activeSection) ?? MOBILE_FIGURE_ITEMS[0]
+  return (
+    <aside aria-hidden="true" className="mobile-figure-dock">
+      <div className="mobile-figure-dock-shell">
+        <div className="mobile-figure-dock-avatar">
+          <img src={activeItem.src} alt="" loading="lazy" decoding="async" className="mobile-figure-dock-image" />
+        </div>
+        <span className="mobile-figure-dock-label">{label}</span>
+      </div>
+    </aside>
+  )
+}
 
 function PublicSite({ locale, setLocale }) {
   const text = uiText[locale]
@@ -1128,6 +1150,11 @@ function PublicSite({ locale, setLocale }) {
           </div>
         ) : null}
       </header>
+
+      <MobileFigureDock
+        activeSection={activeSection}
+        label={navigationItems.find((item) => item.id === activeSection)?.label || text.hero.name}
+      />
 
       <main id="main-content" className="site-main relative z-10">
         <Section id="home" className="home-section overflow-hidden pt-12 sm:pt-24 lg:pt-32">
