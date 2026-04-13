@@ -266,9 +266,9 @@ function LanguageSwitch({ locale, setLocale, labels }) {
 
 function AdminSection({ id, data, children }) {
   return (
-    <section id={id} data-admin-section className="scroll-mt-28 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 md:p-7">
+    <section id={id} data-admin-section className="scroll-mt-28 overflow-x-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 md:p-7">
       <p className="text-xs uppercase tracking-[0.34em] text-slate-500">{data[0]}</p>
-      <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-white md:text-4xl">{data[1]}</h2>
+      <h2 className="mt-3 max-w-3xl break-words text-3xl font-semibold tracking-tight text-white md:text-4xl">{data[1]}</h2>
       <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 md:text-base">{data[2]}</p>
       <div className="mt-8">{children}</div>
     </section>
@@ -2152,12 +2152,12 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
 
   if (authenticated) {
     return (
-      <div className="site-shell auth-shell admin-shell min-h-screen bg-obsidian text-slate-100">
-        <div className="admin-shell-wrap mx-auto max-w-7xl px-4 py-6 md:px-8">
+      <div className="site-shell auth-shell admin-shell min-h-screen overflow-x-hidden bg-obsidian text-slate-100">
+        <div className="admin-shell-wrap mx-auto max-w-7xl overflow-x-hidden px-4 py-6 md:px-8">
           <header data-admin-header className="admin-shell-header glass-card sticky top-4 z-40 rounded-[2rem] px-5 py-4 md:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div><p className="text-xs uppercase tracking-[0.34em] text-slate-500">{copy.hiddenWorkspace}</p><h1 className="mt-2 text-2xl font-semibold text-white md:text-3xl">{copy.adminSurface}</h1></div>
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4">
+              <div className="min-w-0"><p className="text-xs uppercase tracking-[0.34em] text-slate-500">{copy.hiddenWorkspace}</p><h1 className="mt-2 text-2xl font-semibold text-white md:text-3xl">{copy.adminSurface}</h1></div>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:justify-end">
                 <div className="hidden gap-2 md:flex">
                   <button type="button" onClick={() => saveCoreSections(locale === 'tr' ? 'Taslak kaydı' : 'Draft save')} className="rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-slate-200">{copy.saveDraft}</button>
                   <button type="button" onClick={() => saveCoreSections(locale === 'tr' ? 'Yayınlama' : 'Publish')} className="button-primary rounded-full px-4 py-2 text-sm font-semibold">{copy.publish}</button>
@@ -2176,7 +2176,7 @@ export function AuthPortal({ locale, setLocale, langLabels }) {
             </aside>
 
             <div className="space-y-6">
-              <div className="sticky top-[5.9rem] z-30 -mx-1 overflow-x-auto pb-1 lg:hidden"><div className="inline-flex gap-2 rounded-full border border-white/10 bg-[rgba(8,10,18,0.72)] p-1 backdrop-blur-xl">{copy.nav.map((item) => <button key={item[0]} type="button" onClick={() => scrollToSection(item[0])} className={`rounded-full px-4 py-2 text-sm whitespace-nowrap ${activeSection === item[0] ? 'bg-sky-400/15 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.22)]' : 'text-slate-300'}`}>{item[1]}</button>)}</div></div>
+              <div className="sticky top-[5.9rem] z-30 max-w-full overflow-x-auto pb-1 lg:hidden"><div className="inline-flex w-max max-w-full gap-2 rounded-full border border-white/10 bg-[rgba(8,10,18,0.72)] p-1 backdrop-blur-xl">{copy.nav.map((item) => <button key={item[0]} type="button" onClick={() => scrollToSection(item[0])} className={`rounded-full px-4 py-2 text-sm whitespace-nowrap ${activeSection === item[0] ? 'bg-sky-400/15 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.22)]' : 'text-slate-300'}`}>{item[1]}</button>)}</div></div>
               {authError ? (
                 <p className="rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">{authError}</p>
               ) : null}

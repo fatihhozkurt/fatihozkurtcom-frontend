@@ -18,7 +18,7 @@ import {
   X,
 } from 'lucide-react'
 import { IconArticle, IconFolderQuestion } from '@tabler/icons-react'
-import { createElement, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, createElement, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   getPublicAbout,
   getPublicArticles,
@@ -32,11 +32,8 @@ import {
   postPublicContactMessage,
   postVisit,
 } from './apiClient'
-import { AuthPortal } from './components/AuthPortal'
 import { BrandIcon } from './components/BrandIcon'
 import { BackgroundEffects, InfoCard, Section, SectionHeading, TechPill } from './components/Chrome'
-import { ProjectModal } from './components/ProjectModal'
-import { ResetPasswordPortal } from './components/ResetPasswordPortal'
 import { uiText } from './locales'
 import { getArticles, getContactLinks, getNavigationItems, getProjects } from './siteContent'
 
@@ -54,6 +51,16 @@ const navIconMap = {
   resume: FileText,
   contact: Mail,
 }
+
+const AuthPortal = lazy(() =>
+  import('./components/AuthPortal').then((module) => ({ default: module.AuthPortal })),
+)
+const ResetPasswordPortal = lazy(() =>
+  import('./components/ResetPasswordPortal').then((module) => ({ default: module.ResetPasswordPortal })),
+)
+const ProjectModal = lazy(() =>
+  import('./components/ProjectModal').then((module) => ({ default: module.ProjectModal })),
+)
 
 const ADMIN_ROUTE = '/auth'
 const ADMIN_RESET_ROUTE = '/auth/reset-password'
@@ -1699,7 +1706,8 @@ function PublicSite({ locale, setLocale }) {
         <p className="mt-2">{text.footer.note}</p>
       </footer>
       {projectModalOpen && selectedProject ? (
-        <ProjectModal
+        <Suspense fallback={null}>
+          <ProjectModal
           project={selectedProject}
           onClose={() => setProjectModalOpen(false)}
           text={{
@@ -1712,7 +1720,8 @@ function PublicSite({ locale, setLocale }) {
             goToImage: text.accessibility.goToImage,
             closeProjectDetails: text.accessibility.closeProjectDetails,
           }}
-        />
+          />
+        </Suspense>
       ) : null}
     </div>
   )
@@ -1945,11 +1954,19 @@ function App() {
   }, [locale, pathname])
 
   if (pathname === ADMIN_RESET_ROUTE) {
-    return <ResetPasswordPortal locale={locale} setLocale={setLocale} langLabels={uiText[locale].lang} adminPath={ADMIN_ROUTE} />
+    return (
+      <Suspense fallback={null}>
+        <ResetPasswordPortal locale={locale} setLocale={setLocale} langLabels={uiText[locale].lang} adminPath={ADMIN_ROUTE} />
+      </Suspense>
+    )
   }
 
   if (pathname === ADMIN_ROUTE) {
-    return <AuthPortal locale={locale} setLocale={setLocale} text={uiText[locale].auth} langLabels={uiText[locale].lang} adminPath={ADMIN_ROUTE} />
+    return (
+      <Suspense fallback={null}>
+        <AuthPortal locale={locale} setLocale={setLocale} text={uiText[locale].auth} langLabels={uiText[locale].lang} adminPath={ADMIN_ROUTE} />
+      </Suspense>
+    )
   }
 
   return <PublicSite locale={locale} setLocale={setLocale} />
