@@ -1750,9 +1750,10 @@ function App() {
     const ogImage = 'https://fatihozkurt.com/og-image.svg'
     const siteName = 'Fatih Ozkurt'
     const personName = 'Fatih Özkurt'
+    const brandAliases = ['Fatih Ozkurt', 'Fatih Özkurt', 'fatihozkurt', 'fatihozkurt.com', 'fatihozkurtcom']
     const keywords = locale === 'tr'
-      ? 'Fatih Özkurt, Fatih Ozkurt, fatihozkurt, Java backend developer, Spring Boot, backend mühendisi, yazılım mimarisi, PostgreSQL, Redis, Kafka, İstanbul'
-      : 'Fatih Ozkurt, Fatih Özkurt, fatihozkurt, Java backend developer, Spring Boot, backend engineer, software architecture, PostgreSQL, Redis, Kafka'
+      ? `${brandAliases.join(', ')}, Java backend developer, Spring Boot, backend mühendisi, yazılım mimarisi, PostgreSQL, Redis, Kafka, İstanbul`
+      : `${brandAliases.join(', ')}, Java backend developer, Spring Boot, backend engineer, software architecture, PostgreSQL, Redis, Kafka`
 
     document.title = title
 
@@ -1819,6 +1820,18 @@ function App() {
       identity: { property: 'og:image' },
       content: ogImage,
     })
+    upsertMeta('meta[property="og:image:type"]', {
+      identity: { property: 'og:image:type' },
+      content: 'image/svg+xml',
+    })
+    upsertMeta('meta[property="og:image:width"]', {
+      identity: { property: 'og:image:width' },
+      content: '1200',
+    })
+    upsertMeta('meta[property="og:image:height"]', {
+      identity: { property: 'og:image:height' },
+      content: '630',
+    })
     upsertMeta('meta[property="og:image:alt"]', {
       identity: { property: 'og:image:alt' },
       content: 'Fatih Ozkurt backend portfolio preview',
@@ -1838,6 +1851,10 @@ function App() {
     upsertMeta('meta[name="twitter:image"]', {
       identity: { name: 'twitter:image' },
       content: ogImage,
+    })
+    upsertMeta('meta[name="twitter:image:alt"]', {
+      identity: { name: 'twitter:image:alt' },
+      content: 'Fatih Ozkurt backend portfolio preview',
     })
     upsertMeta('meta[name="twitter:site"]', {
       identity: { name: 'twitter:site' },
@@ -1862,6 +1879,14 @@ function App() {
         }
         altNode.setAttribute('href', 'https://fatihozkurt.com/')
       })
+    let defaultAltNode = document.head.querySelector('link[rel="alternate"][hreflang="x-default"]')
+    if (!defaultAltNode) {
+      defaultAltNode = document.createElement('link')
+      defaultAltNode.setAttribute('rel', 'alternate')
+      defaultAltNode.setAttribute('hreflang', 'x-default')
+      document.head.appendChild(defaultAltNode)
+    }
+    defaultAltNode.setAttribute('href', 'https://fatihozkurt.com/')
 
     if (!isAuthPage) {
       const jsonLd = {
@@ -1872,14 +1897,10 @@ function App() {
             '@id': 'https://fatihozkurt.com/#website',
             url: 'https://fatihozkurt.com/',
             name: siteName,
+            alternateName: brandAliases,
             description,
             inLanguage: ['en-US', 'tr-TR'],
             publisher: { '@id': 'https://fatihozkurt.com/#person' },
-            potentialAction: {
-              '@type': 'SearchAction',
-              target: 'https://fatihozkurt.com/?q={search_term_string}',
-              'query-input': 'required name=search_term_string',
-            },
           },
           {
             '@type': 'ProfilePage',
@@ -1888,13 +1909,14 @@ function App() {
             name: `${personName} | Java Backend Developer`,
             isPartOf: { '@id': 'https://fatihozkurt.com/#website' },
             about: { '@id': 'https://fatihozkurt.com/#person' },
+            mainEntity: { '@id': 'https://fatihozkurt.com/#person' },
             inLanguage: ['en-US', 'tr-TR'],
           },
           {
             '@type': 'Person',
             '@id': 'https://fatihozkurt.com/#person',
             name: personName,
-            alternateName: 'Fatih Ozkurt',
+            alternateName: brandAliases,
             jobTitle: 'Java Backend Developer',
             url: 'https://fatihozkurt.com/',
             image: ogImage,
